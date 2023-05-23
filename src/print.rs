@@ -8,25 +8,25 @@ pub mod print_fn
 
 	pub fn print_commands() {
 		println!("Commands:\n");
-		println!("rustix-vcs init\n  command to initialize the project\n");
-		println!("rustix-vcs add src/main.js save_name\n  command to save the file.\n");
-		println!("rustix-vcs delete save_name\n  command to delete the save.\n");
-		println!("rustix-vcs select save_name\n  command to insert saved content into a file.\n");
+		println!("my_vcs init\n  command to initialize the project\n");
+		println!("my_vcs add src/main.js save_name\n  command to save the file.\n");
+		println!("my_vcs delete save_name\n  command to delete the save.\n");
+		println!("my_vcs select save_name\n  command to insert saved content into a file.\n");
 
-		println!("rustix-vcs commit \"comment to be save\"\n  command to commit the save\n");
-		println!("rustix-vcs CreateBranch NameBranchToCreate \n  command to create a new branch\n");
-		println!("rustix-vcs ChangeBranch NameBranchToChange\n  command to change the current branch to another\n");
-		println!("rustix-vcs ChangeVersion NameVersionToChange\n  command to browse between the version of the code\n");
+		println!("my_vcs commit \"comment to be save\"\n  command to commit the save\n");
+		println!("my_vcs CreateBranch NameBranchToCreate \n  command to create a new branch\n");
+		println!("my_vcs ChangeBranch NameBranchToChange\n  command to change the current branch to another\n");
+		println!("my_vcs ChangeVersion NameVersionToChange\n  command to browse between the version of the code\n");
 
-		println!("rustix-vcs print\n  command to display all saves and info about project.\n");
-		println!("rustix-vcs info\n  command to view information about the initialized project.\n");
-		println!("rustix-vcs cmd\n  command to display all commands.\n");
-		println!("rustix-vcs log\n  command to view logs.\n");
+		println!("my_vcs print\n  command to display all saves and info about project.\n");
+		println!("my_vcs info\n  command to view information about the initialized project.\n");
+		println!("my_vcs cmd\n  command to display all commands.\n");
+		println!("my_vcs log\n  command to view logs.\n");
 	}
 
 
 	fn show_log() -> std::io::Result<()> {
-		let file = fs::File::open("rustix/log.txt")?;
+		let file = fs::File::open("my_vcs/log.txt")?;
 		let reader = BufReader::new(file);
 		for line in reader.lines() { println!("{}", line?); }
 
@@ -53,7 +53,7 @@ pub mod print_fn
 
 		fn get_data() -> std::io::Result<Vec<String>>
 		{
-			let file = File::open("rustix/init.txt")?;
+			let file = File::open("my_vcs/init.txt")?;
 			let reader = BufReader::new(file);
 			let mut info_base = Vec::new();
 
@@ -69,17 +69,17 @@ pub mod print_fn
 	}
 
 
-	fn print_db() {
-		let saves_base = crate::database::get::start().unwrap();
-		let mut id : i64 = 1;
+	//fn print_db() {
+	//	let saves_base = crate::database::get::start().unwrap();
+	//	let mut id : i64 = 1;
 
-		for x in saves_base.into_iter() {
-			println!("{}. {}\n   - path\n      {}\n   - saved\n      {}\n      {}\n",
-			id, x[1], x[0], x[2], x[3]);
+	//	for x in saves_base.into_iter() {
+	//		println!("{}. {}\n   - path\n      {}\n   - saved\n      {}\n      {}\n",
+	//		id, x[1], x[0], x[2], x[3]);
 
-			id += 1;
-		}
-	}
+	//		id += 1;
+	//	}
+	//}
 
 
 	// START POINT
@@ -88,7 +88,7 @@ pub mod print_fn
 		else {
 			crate::log::logger::start("PRINT ".to_string());
 			read_yaml();
-			print_db();
+			//print_db();
 		}
 	}
 }

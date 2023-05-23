@@ -1,24 +1,21 @@
-use chrono::prelude::*;
-pub mod time_fn
+pub mod time_funcs
 {
-    let local: DateTime<Local> = Local::now();
-
-    
-    fn get_date() -> String
+    use chrono::{Local, DateTime};
+    fn get_date(local: DateTime<Local>) -> String
     {
         let date = local.format("%d/%m/%y").to_string();
-        
-        date
+        return date
     }
-    
-    fn get_time() -> String
-	{
-        let time = local.format("%H:%M:%S").to_string();
 
-		time
-	}
-	pub fn start() -> [String; 2] {
-		let res: [String; 2] = [get_date(), get_time()];
-		return res;
-	}
+    fn get_time(local: DateTime<Local>) -> String
+    {
+        let time = local.format("%H:%M:%S").to_string();
+        return time
+    }
+
+    pub fn start() -> [String; 2] {
+        let local: DateTime<Local> = Local::now();
+        let res: [String; 2] = [get_date(local), get_time(local)];
+        return res;
+    }
 }
