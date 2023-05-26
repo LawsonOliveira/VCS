@@ -86,7 +86,7 @@ pub mod commit_fn
             eprintln!("Error writing new version: {}", error);
             return;
         }
-    }
+}
 
     
     //pub fn commit(){}
