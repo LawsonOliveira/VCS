@@ -1,21 +1,37 @@
 pub mod logger
 {
-	use std::fs::OpenOptions;
-	use std::io::prelude::*;
+	use std::fs;
+	use std::io::Write;
+    use serde_yaml;
 
+    use crate::structs::structs_mod;
+    use crate::time::time_funcs;
 
-	pub fn start(action: String)
-	{
-		let time_date: [String; 2] = crate::time::time_funcs::start();
+    pub fn start(action: String) {
+        let time_date: [String; 2] = time_funcs::start();
 
-		let created_date = &time_date[0];
-		let created_time = &time_date[1];
+        let mut log_to_save = structs_mod::Log {
+            action: vec![action.clone()],
+            created_date: vec![time_date[0].clone()],
+            created_time: vec![time_date[1].clone()],
+        };
 
-		let info = format!("{} | {} - {}", action, created_date, created_time);
+        let file_path = "./my_vcs/log.yml";
 
-		let mut file = OpenOptions::new().write(true).append(true)
-			.open("rustix/log.txt").unwrap();
+        let f = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(file_path);
 
-		if let Err(e) = writeln!(file, "{}", info) { println!("Couldn't write to file: {}", e); }
-	}
+        match f {
+            Ok(mut file) => {
+                match serde_yaml::to_writer(&file, &log_to_save) {
+                    Ok(_) => println!("Log saved"),
+                    Err(_) => eprintln!("Couldn't save the log"),
+                }
+            }
+            Err(error) => eprintln!("Error opening file: {}", error),
+        }
+    }
 }
+

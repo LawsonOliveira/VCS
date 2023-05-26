@@ -5,26 +5,28 @@ use std::io;
 
 // MODULES
 mod init;
-pub use crate::init::init_fn;
+use crate::init::init_fn;
 
-//mod add_file;
-//pub use crate::add_file::add_fn;
-
-//mod delete;
-//pub use crate::delete::delete_fn;
-
-//mod select;
-//pub use crate::select::select_fn;
 
 mod print;
-pub use crate::print::print_fn;
-
-mod log;
+use crate::print::print_fn;
 
 mod time;
-pub use crate::time::time_funcs;
-//mod database;
-// MODULES
+use crate::time::time_funcs;
+
+mod commit;
+use crate::commit::commit_fn;
+
+mod add;
+use crate::add::add_fn;
+
+mod remove;
+use crate::remove::remove_fn;
+
+mod structs;
+mod log;
+
+
 
 
 fn main() {
@@ -44,23 +46,41 @@ fn main() {
 	let first_arg = std::env::args().nth(1).expect("no function given");
 
 	match first_arg.as_ref() {
-		"init" => init_fn::start_vcs(), &_ => todo!(),
-		//"add" => {
-		//	let args: Vec<_> = std::env::args().collect();
+		"init" => init_fn::start_vcs(),
+		"add" => {
+			let args: Vec<_> = std::env::args().collect();
 
-		//	if args.len() == 3 {
-		//		let scd_arg = std::env::args().nth(2).expect("missing the argument 2");
-		//		let thd_arg = std::env::args().nth(3).expect("missing the argument 3");
+			if args.len() < 3 {
+				println!("you nee to provide at least one file to add");
+			}
+			else{
+				for i in 3..args.len(){
+					let arg = std::env::args().nth(i).expect("missing the arg");
+					let fl_exist = std::path::Path::new(&arg).exists();
+		
+					if fl_exist == true { add_fn::add(&arg); }
+					else { println!("not exist"); }
 
-		//		let fl_exist = std::path::Path::new(&scd_arg).exists();
+				}
+			}
+		},
+		"remove" => {
+			let args: Vec<_> = std::env::args().collect();
 
-		//		if fl_exist == true { add_fn::start(&scd_arg, &thd_arg); }
-		//		else { println!("not exist"); }
-		//	}
-		//	else
-		//	{ println!("you didnt provide the right number of arguments"); }
-		//},
-		//"delete" => {
+			if args.len() < 3 {
+				println!("you nee to provide at least one file to remove");
+			}
+			else{
+				for i in 3..args.len(){
+					let arg = std::env::args().nth(i).expect("missing the arg");
+					let fl_exist = std::path::Path::new(&arg).exists();
+		
+					if fl_exist == true { add_fn::add(&arg); }
+					else { println!("not exist"); }
+
+				}
+			}
+		}
 		//	let scd_arg = std::env::args().nth(2).expect("save to delete wasn't given");
 		//	delete_fn::start(scd_arg);
 		//},

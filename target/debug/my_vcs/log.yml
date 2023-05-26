@@ -1,0 +1,12 @@
+action:
+- 'INIT  '
+created_date:
+- 26/05/23
+created_time:
+- 22:06:00
+action:
+- INIT -> ERROR
+created_date:
+- 26/05/23
+created_time:
+- 22:10:27

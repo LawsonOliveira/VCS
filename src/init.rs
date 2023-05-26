@@ -13,10 +13,10 @@ pub mod init_fn
 				crate::log::logger::start("INIT -> ERROR".to_string());
 			}
 			Ok(_) => {
-				fs::File::create("my_vcs/log.txt");
-				fs::File::create("my_vcs/init.txt");
-				fs::File::create("my_vcs/storage.txt");
-				fs::create_dir("my_vcs/saves");
+				fs::File::create("./my_vcs/log.yml");
+				fs::File::create("./my_vcs/init.yml");
+				fs::File::create("./my_vcs/storage.yml");
+				fs::create_dir("./my_vcs/saves");
 				add_info();
 				crate::log::logger::start("INIT  ".to_string());
 			},

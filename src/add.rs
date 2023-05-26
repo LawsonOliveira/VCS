@@ -2,7 +2,7 @@ pub mod add_fn {
     // PACKAGES
     use std::fs;
     use std::io::Write;
-
+    use crate::log::logger;
     // Function to write a line to a file
     fn write_line(line_path: &str, file_path: &str) -> Result<(), std::io::Error> {
         // Open the file in append mode
@@ -41,8 +41,9 @@ pub mod add_fn {
     // Function to add a file to the staging area
     pub fn add(file_name: &str) {
         let path = "./my_vcs/saves/";
+        print!("Aqui");
         let file_path2add = format!("{}{}", path, file_name);
-        let staging_area_path = format!("{}staging_area.yaml", path);
+        let staging_area_path = format!("{}staging_area.yml", path);
 
         // Create the staging area file if it doesn't exist
         if fs::metadata(&staging_area_path).is_err() {
@@ -60,6 +61,7 @@ pub mod add_fn {
                         eprintln!("Error adding file: {}", error);
                     } else {
                         println!("File added successfully.");
+                        logger::start(format!("add {}", file_name).to_string());
                     }
                 } else {
                     println!("File is already added.");

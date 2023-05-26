@@ -1,7 +1,7 @@
 pub mod remove_fn {
     // PACKAGES
     use std::fs;
-
+    use crate::log::logger;
     // Function to remove a line from a file
     fn remove_line_from_file(line_to_remove: &str, file_path: &str) -> Result<(), std::io::Error> {
         let file_content = fs::read_to_string(file_path)?;
@@ -28,7 +28,7 @@ pub mod remove_fn {
     pub fn remove(file_to_remove: &str) {
         let path = "./my_vcs/saves/";
         let file_path2remove = format!("{}{}", path, file_to_remove);
-        let staging_area_path = format!("{}staging_area.yaml", path);
+        let staging_area_path = format!("{}staging_area.yml", path);
 
         // Create the staging area file if it doesn't exist
         if fs::metadata(&staging_area_path).is_err() {
@@ -43,6 +43,8 @@ pub mod remove_fn {
                     eprintln!("Error removing line from file: {}", error);
                 } else {
                     println!("File removed from the staging area.");
+                    logger::start(format!("remove {}", file_to_remove).to_string());
+
                 }
             }
             Ok(false) => println!("File is not in the staging area.\n"),
