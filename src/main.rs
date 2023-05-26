@@ -80,7 +80,7 @@ fn main() {
 
 				}
 			}
-		}
+		}, &_ => todo!(),
 		//	let scd_arg = std::env::args().nth(2).expect("save to delete wasn't given");
 		//	delete_fn::start(scd_arg);
 		//},
