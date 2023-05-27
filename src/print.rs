@@ -1,9 +1,10 @@
 pub mod print_fn
 {
 	// PACKAGES
-	use std::fs;
-	use std::fs::File;
-	use std::io::{prelude::*, BufReader};
+	use serde_yaml::{self};
+	use crate::structs::structs_mod::Log;
+	use crate::structs::structs_mod::Init;
+
 
 
 	pub fn print_commands() {
@@ -25,47 +26,33 @@ pub mod print_fn
 	}
 
 
-	fn show_log() -> std::io::Result<()> {
-		let file = fs::File::open("my_vcs/log.txt")?;
-		let reader = BufReader::new(file);
-		for line in reader.lines() { println!("{}", line?); }
+	fn show_log() -> Result<(), Box<dyn std::error::Error>> {
 
+		let f = std::fs::File::open("config.yml").expect("Could not open file.");
+		let log: Log = serde_yaml::from_reader(f).expect("Could not read values.");
+
+		for i in 0..log.action.len(){
+			println!("{}",log.created_date[i]);
+			println!("{}",log.action[i]);
+			println!("{}",log.created_time[i]);
+		}
 		Ok(())
 	}
 
 
-	pub fn read_yaml() {
-		fn cut_data(x: String) -> String
-		{
-			let mut elem_start_point : i64 = 0;
-			let mut s = String::new();
-
-			for i in x.chars() {
-				if i == ':' { elem_start_point += 1; }
-				if elem_start_point >= 1 { s.push(i); }
-			}
-
-			s.remove(0);
-			s.remove(0);
-
-			return s;
-		}
-
+	pub fn print_init() {
 		fn get_data() -> std::io::Result<Vec<String>>
 		{
-			let file = File::open("my_vcs/init.txt")?;
-			let reader = BufReader::new(file);
-			let mut info_base = Vec::new();
+			let f = std::fs::File::open("init.yml").expect("Could not open file.");
+			let init: Init = serde_yaml::from_reader(f).expect("Could not read values.");
 
-			for line in reader.lines() { info_base.push(cut_data(line.unwrap())); }
-
-			Ok(info_base)
+			Ok(vec![init.created_date,init.created_time,init.current_path])
 		}
 
 		let info : Vec<String> = get_data().unwrap();
 
-		println!("\nINFO\n  os: {}\n  created date: {} - {}\n  current path: {}\n\n",
-		info[1], info[3], info[2], info[0]);
+		println!("\nINFO: created date: {} - {}\n  current path: {}\n\n",
+		info[0], info[1], info[2]);
 	}
 
 
@@ -83,12 +70,12 @@ pub mod print_fn
 
 
 	// START POINT
-	pub fn start(x: i64) {
-		if x == 1 { show_log(); }
-		else {
-			crate::log::logger::start("PRINT ".to_string());
-			read_yaml();
-			//print_db();
-		}
+	pub fn print_log() -> Result<(), Box<dyn std::error::Error>> {
+		show_log()?;
+		Ok(())
 	}
+	pub fn print_all(){
+		print_init();
+	}
+	//pub fn print_db(){}
 }

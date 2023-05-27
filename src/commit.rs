@@ -1,9 +1,51 @@
 pub mod commit_fn
 {
+
+
+    use std::path::Path;
+    use crate::log::logger;
+    use std::path::PathBuf;
+    use std::io::BufRead;
 	// PACKAGES
 	use std::fs;
     use diffy;
+    use std::io;
+    use crate::structs::structs_mod;
+    use serde_yaml;
+    use sha2::{Digest, Sha256};
+    use crate::io::BufReader;
+    use std::collections::HashMap;
+
+    use serde::{Serialize, Deserialize};
+    use std::fs::{File, OpenOptions};
+    use std::io::{Read, Write};
+
+
+    fn read_structs_from_yaml<T: for<'de> Deserialize<'de>>(file_path: &str) -> Result<T, Box<dyn std::error::Error>> {
+        let mut file = File::open(file_path)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
     
+        let result: T = serde_yaml::from_str(&contents)?;
+    
+        Ok(result)
+    }
+
+    fn write_structs_to_yaml<T: Serialize>(structs: &T, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let yaml_string = serde_yaml::to_string(&structs)?;
+    
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(file_path)?;
+    
+        file.write_all(yaml_string.as_bytes())?;
+    
+        Ok(())
+    }
+
+
 
     fn gen_diff(original_text_path: &str, modified_text_path: &str, save_path: &str) {
         // Read the contents of the original text file
@@ -86,29 +128,48 @@ pub mod commit_fn
             eprintln!("Error writing new version: {}", error);
             return;
         }
+    }
+
+
+    fn read_file_lines(file_path: &str) -> Result<Vec<String>, std::io::Error> {
+        let file = File::open(file_path)?;
+        let reader = BufReader::new(file);
+        let lines: Result<Vec<String>, _> = reader.lines().collect();
+        Ok(lines?)
+    }
+        
+
+
+
+// Function to commit changes
+pub fn commit(message: &str) {
+    let path = "./my_vcs/";
+    let staging_area_path = format!("{}staging_area.yml", path);
+    let commit_path = format!("{}commits/", path);
+
+
+
+    match read_file_lines(&staging_area_path) {
+        Ok(lines) => {
+            for line in lines {
+            let file_path = format!("{}adds_contents/{}.yml", path, line);
+
+                println!("{}", line);
+
+
+
+
+
+
+
+            }
+        }
+        Err(err) => eprintln!("Error reading file: {}", err),
+    }
+
+
+
 }
-
-    
-    //pub fn commit(){}
-    
-    /*pub fn test(){
-        let original_text_path: &str;
-        let modified_text_path: &str;
-        let save_path: &str;
-        let version_3: &str;
-        original_text_path = "./my_vcs/saves/text1.yaml";
-        modified_text_path = "./my_vcs/saves/text2.yaml";
-        save_path = "./my_vcs/saves/diffs.yaml";
-        version_3 = "./my_vcs/saves/textv3.yaml";
-        gen_diff(&original_text_path, &modified_text_path, &save_path);
-        apply_patch(&original_text_path, &save_path, &version_3);
-        assert_eq!(fs::read_to_string(&modified_text_path).unwrap(), fs::read_to_string(&version_3).unwrap());
-
-    }*/
-    
 }
-
-
-
 
 

@@ -7,7 +7,8 @@ use std::io;
 mod init;
 use crate::init::init_fn;
 
-
+mod test;
+use test::test_fn;
 mod print;
 use crate::print::print_fn;
 
@@ -24,8 +25,8 @@ mod remove;
 use crate::remove::remove_fn;
 
 mod structs;
-mod log;
 
+mod log;
 
 
 
@@ -54,13 +55,14 @@ fn main() {
 				println!("you nee to provide at least one file to add");
 			}
 			else{
-				for i in 3..args.len(){
-					let arg = std::env::args().nth(i).expect("missing the arg");
+				for arg in std::env::args().skip(2) {
 					let fl_exist = std::path::Path::new(&arg).exists();
-		
-					if fl_exist == true { add_fn::add(&arg); }
-					else { println!("not exist"); }
-
+				
+					if fl_exist {
+						add_fn::add(&arg);
+					} else {
+						println!("File does not exist");
+					}
 				}
 			}
 		},
@@ -71,16 +73,30 @@ fn main() {
 				println!("you nee to provide at least one file to remove");
 			}
 			else{
-				for i in 3..args.len(){
-					let arg = std::env::args().nth(i).expect("missing the arg");
-					let fl_exist = std::path::Path::new(&arg).exists();
-		
-					if fl_exist == true { add_fn::add(&arg); }
-					else { println!("not exist"); }
+				for arg in std::env::args().skip(2) {
+					//let fl_exist = std::path::Path::new(&arg).exists();
+					remove_fn::remove(&arg);
 
+					//if fl_exist {
+					//	remove_fn::remove(&arg);
+					//} else {
+					//	println!("File does not exist");
+					//}
 				}
 			}
-		}, &_ => todo!(),
+		}, 
+		"commit" =>{
+			let args: Vec<_> = std::env::args().collect();
+
+			if args.len() < 3 || args.len()>3 {
+				println!("you need to provide at least one file to remove");
+			}
+			else{commit_fn::commit(&args[2].to_string());}
+		},
+		"test" =>test_fn::my_test(),
+		//"print" => print_fn::start(0),
+		//"log" => print_fn::start(1),
+		&_ => todo!(),
 		//	let scd_arg = std::env::args().nth(2).expect("save to delete wasn't given");
 		//	delete_fn::start(scd_arg);
 		//},
@@ -104,8 +120,6 @@ fn main() {
 		//	let scd_arg = std::env::args().nth(2).expect("version to change wasn't given");
 			//select_fn::start(scd_arg);
 		//},
-		//"print" => print_fn::start(0),
-		//"log" => print_fn::start(1),
 		//"info" => print_fn::read_yaml(),
 		//"cmd" => print_fn::print_commands(),
 		//"exit" => return,

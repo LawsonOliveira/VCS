@@ -1,6 +1,7 @@
 pub mod remove_fn {
     // PACKAGES
     use std::fs;
+    use std::io;
     use crate::log::logger;
     // Function to remove a line from a file
     fn remove_line_from_file(line_to_remove: &str, file_path: &str) -> Result<(), std::io::Error> {
@@ -24,10 +25,18 @@ pub mod remove_fn {
         Ok(lines.contains(&line_to_verify))
     }
 
+    fn remove_file(file_path: &str) -> io::Result<()> {
+        fs::remove_file(file_path)?;
+        println!("File removed successfully.");
+        Ok(())
+    }
+
+
     // Function to remove a file from the staging area
     pub fn remove(file_to_remove: &str) {
-        let path = "./my_vcs/saves/";
-        let file_path2remove = format!("{}{}", path, file_to_remove);
+        let path = "./my_vcs/";
+        let line_to_remove = format!("{}{}", "./", file_to_remove);
+        let file_path2remove = format!("{}adds_contents/{}.yml", path, file_to_remove);
         let staging_area_path = format!("{}staging_area.yml", path);
 
         // Create the staging area file if it doesn't exist
@@ -36,12 +45,15 @@ pub mod remove_fn {
         }
 
         // Check if the file is already added
-        match verify_if_file_is_added(&file_path2remove, &staging_area_path) {
+        match verify_if_file_is_added(&line_to_remove, &staging_area_path) {
             Ok(true) => {
                 // Remove the line from the staging area file
-                if let Err(error) = remove_line_from_file(&file_path2remove, &staging_area_path) {
+                if let Err(error) = remove_line_from_file(&line_to_remove, &staging_area_path) {
                     eprintln!("Error removing line from file: {}", error);
                 } else {
+                    if let Err(err) = remove_file(&file_path2remove) {
+                        eprintln!("Error removing file: {}", err);
+                    }
                     println!("File removed from the staging area.");
                     logger::start(format!("remove {}", file_to_remove).to_string());
 

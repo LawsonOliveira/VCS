@@ -3,9 +3,10 @@ pub mod init_fn
 	// PACKAGES
 	use std::env;
 	use std::fs;
-
-
+	use crate::structs;
+	use std::io;
 	// START POINT
+	
 	pub fn start_vcs() {
 		match fs::create_dir("my_vcs") {
 			Err(why) => {
@@ -15,8 +16,22 @@ pub mod init_fn
 			Ok(_) => {
 				fs::File::create("./my_vcs/log.yml");
 				fs::File::create("./my_vcs/init.yml");
-				fs::File::create("./my_vcs/storage.yml");
 				fs::create_dir("./my_vcs/saves");
+				if let Err(err) = structs::StructWriter::write_blank_structs_to_files(&structs::StructWriter) {
+					// Handle the error
+					if let Some(io_error) = err.downcast_ref::<io::Error>() {
+						// Handle IO error
+						eprintln!("IO error: {}", io_error);
+					} else if let Some(yaml_error) = err.downcast_ref::<serde_yaml::Error>() {
+						// Handle YAML error
+						eprintln!("YAML error: {}", yaml_error);
+					} else {
+						// Handle other errors
+						eprintln!("Unknown error: {}", err);
+					}
+				}
+
+
 				add_info();
 				crate::log::logger::start("INIT  ".to_string());
 			},
@@ -39,7 +54,7 @@ pub mod init_fn
                             created_date: {created_date}\n
                             created_time: {created_time}");
 
-		fs::write("my_vcs/init.txt", info).expect("Unable to write file");
+		fs::write("./my_vcs/init.yml", info).expect("Unable to write file");
 
 		println!("Initialized !");
 	}
