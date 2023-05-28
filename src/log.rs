@@ -1,37 +1,37 @@
-pub mod logger
-{
-	use std::fs;
-	use std::io::Write;
-    use serde_yaml;
+/// Provides functions for logging actions in the VCS.
+use std::fs;
+use std::io::Write;
+use serde_yaml;
 
-    use crate::structs::structs_mod;
-    use crate::time::time_funcs;
+use crate::structs;
+use crate::time;
 
-    pub fn start(action: String) {
-        let time_date: [String; 2] = time_funcs::start();
+/// Starts logging the specified action.
+///
+/// # Arguments
+///
+/// * `action` - The action to log.
+///
+/// # Errors
+///
+/// Returns an error if there is an issue reading or updating the log file.
+pub fn start(action: String) -> Result<(), Box<dyn std::error::Error>> {
+    let time_date: [String; 2] = time::start();
 
-        let mut log_to_save = structs_mod::Log {
-            action: vec![action.clone()],
-            created_date: vec![time_date[0].clone()],
-            created_time: vec![time_date[1].clone()],
-        };
+    let action = action;
+    let created_date = time_date[0].clone();
+    let created_time = time_date[1].clone();
 
-        let file_path = "./my_vcs/log.yml";
+    let path = "my_vcs/";
 
-        let f = fs::OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(file_path);
+    let mut log_struct: structs::structs_mod::Log = structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "log.yml"))?;
+    log_struct.action.push(action);
+    log_struct.created_date.push(created_date);
+    log_struct.created_time.push(created_time);
 
-        match f {
-            Ok(mut file) => {
-                match serde_yaml::to_writer(&file, &log_to_save) {
-                    Ok(_) => println!("Log saved"),
-                    Err(_) => eprintln!("Couldn't save the log"),
-                }
-            }
-            Err(error) => eprintln!("Error opening file: {}", error),
-        }
-    }
+    // Update the struct file
+    structs::StructWriter::update_struct_file(&format!("{}{}", path, "log.yml"), &log_struct)?;
+
+    Ok(())
 }
 
