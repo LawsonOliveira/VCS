@@ -1,7 +1,7 @@
 // PACKAGES
 use serde_yaml;
-use crate::structs::structs_mod::{Log, Init};
-
+use crate::structs::structs_mod::{Log,Init,FileChangeLog};
+use crate::structs::read_struct_from_file;
 /// Prints available commands.
 pub fn print_commands() {
     println!("Commands:\n");
@@ -19,80 +19,40 @@ pub fn print_commands() {
     println!("my_vcs log\n  command to view logs.\n");
 }
 
-/// Shows the log entries.
-///
-/// # Errors
-///
-/// Returns an error if there is an issue opening or reading the log file.
-fn show_log() -> Result<(), Box<dyn std::error::Error>> {
-    let f = std::fs::File::open("config.yml")?;
-    let log: Log = serde_yaml::from_reader(f)?;
-
-    for i in 0..log.action.len() {
-        println!("{}", log.created_date[i]);
-        println!("{}", log.action[i]);
-        println!("{}", log.created_time[i]);
-    }
-
-    Ok(())
-}
-
-
 /// Prints project initialization information.
 pub fn print_init() {
-    fn get_data() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        let f = std::fs::File::open("init.yml")?;
-        let init: Result<Init, serde_yaml::Error> = serde_yaml::from_reader(f);
-
-        match init {
-            Ok(init) => Ok(vec![init.created_date, init.created_time, init.current_path]),
-            Err(err) => Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                err.to_string(),
-            ))),
-        }
-    }
-
-    let info: Vec<String> = match get_data() {
-        Ok(data) => data,
-        Err(err) => {
-            println!("Error: {}", err);
-            return;
-        }
-    };
+    let  info : Init = read_struct_from_file("my_vcs/init.yml").unwrap();
 
     println!(
         "\nINFO: created date: {} - {}\n  current path: {}\n\n",
-        info[0], info[1], info[2]
+        info.created_date, info.created_time, info.current_path
     );
 }
+
 /// Prints the log entries.
 ///
 /// # Errors
 ///
 /// Returns an error if there is an issue showing the log.
-pub fn print_log() -> Result<(), Box<dyn std::error::Error>> {
-    show_log()?;
-    Ok(())
-}
+/// 
+/// 
 
 /// Prints all information including project initialization and log entries.
-pub fn print_all() {
-    print_init();
-    // print_db();
+pub fn print_log(){
+    let log: Log = read_struct_from_file("my_vcs/log.yml").unwrap();
+
+    for i in 0..log.action.len() {
+        if log.action.contains(&"commit".to_string()){
+            println!("{}", log.created_date[i]);
+            println!("{}", log.action[i]);
+            println!("{}", log.created_time[i]);
+            println!("{}", log.hash[i]);
+
+        }else{
+            println!("{}", log.created_date[i]);
+            println!("{}", log.action[i]);
+            println!("{}", log.created_time[i]);
+        }
+    }
 }
-
-// fn print_db() {
-//     let saves_base = crate::database::get::start().unwrap();
-//     let mut id: i64 = 1;
-
-//     for x in saves_base.into_iter() {
-//         println!(
-//             "{}. {}\n   - path\n      {}\n   - saved\n      {}\n      {}\n",
-//             id, x[1], x[0], x[2], x[3]
-//         );
-
-//         id += 1;
-//     }
-// }
 

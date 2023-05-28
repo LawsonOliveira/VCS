@@ -55,7 +55,6 @@ fn verify_if_file_is_added(line_to_verify: &str, file_path: &str) -> Result<bool
 /// Returns an error if there is an issue removing the file.
 fn remove_file(file_path: &str) -> io::Result<()> {
     fs::remove_file(file_path)?;
-    println!("File removed successfully.");
     Ok(())
 }
 
@@ -89,7 +88,6 @@ pub fn remove(file_to_remove: &str, use_log: bool) -> Result<(), Box<dyn std::er
                 if let Err(err) = remove_file(&file_path2remove) {
                     return Err(format!("Error removing file: {}", err).into());
                 }
-                println!("File removed from the staging area.");
                 if use_log {
                     log::start(format!("remove {}", file_to_remove));
                 }

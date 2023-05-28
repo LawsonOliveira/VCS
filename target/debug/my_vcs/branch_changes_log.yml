@@ -1,0 +1,19 @@
+branch_name: ./main/
+files_changelogs:
+- original_file_path: ''
+  original_file: ''
+  hash_changelog: []
+  last_file: ''
+  hash_files_path: ''
+- original_file_path: ./
+  original_file: text2.txt
+  hash_changelog:
+  - aeaeac542215d934f1bddc8787e1d1c7852c36b56cb4ded02ef0c721e12feacb
+  last_file: text2.txt
+  hash_files_path: my_vcs/saves/
+- original_file_path: ./
+  original_file: text1.txt
+  hash_changelog:
+  - a532fe98a4187089aa6028be8a152a03bee198c7c4aa42e5b804177c11962860
+  last_file: text1.txt
+  hash_files_path: my_vcs/saves/

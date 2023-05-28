@@ -1,5 +1,5 @@
-/home/lawson/Downloads/VCS/target/debug/build/generic-array-b68563f2e4a21507/build_script_build-b68563f2e4a21507: /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs
+/home/vitoriano/Documents/cs/Linux&Windows/VCS/target/debug/build/generic-array-b68563f2e4a21507/build_script_build-b68563f2e4a21507: /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs
 
-/home/lawson/Downloads/VCS/target/debug/build/generic-array-b68563f2e4a21507/build_script_build-b68563f2e4a21507.d: /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs
+/home/vitoriano/Documents/cs/Linux&Windows/VCS/target/debug/build/generic-array-b68563f2e4a21507/build_script_build-b68563f2e4a21507.d: /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs
 
-/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.7/build.rs:

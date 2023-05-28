@@ -8,6 +8,7 @@ mod add;
 mod remove;
 mod structs;
 mod log;
+mod delete_commit;
 
 fn main() {
     // Check if the user provided more than 1 argument
@@ -63,19 +64,24 @@ fn main() {
                 commit::commit(&args[2]);
             }
         },
-		//"print" => print::start(0),
-		//"log" => print::start(1),
+        "deletecommit" =>{
+            let args: Vec<_> = std::env::args().collect();
+
+            if args.len() != 3 {
+                println!("You need to provide commit hash to delet.");
+            } else {
+                delete_commit::delete_commit_fn::remove(&args[2]);
+            }
+        },
+		"print_log" => print::print_log(),
+        "print_init" => print::print_init(),
+        "commands" => print::print_commands(),
+
+
 		&_ => todo!(),
-		//	let scd_arg = std::env::args().nth(2).expect("save to delete wasn't given");
-		//	delete_fn::start(scd_arg);
-		//},
 		//"select" => {
 		//	let scd_arg = std::env::args().nth(2).expect("save to select wasn't given");
 		//	select_fn::start(scd_arg);
-		//},
-		//"commit" => {
-		//	let scd_arg = std::env::args().nth(2).expect("commit wasn't given");
-			//select_fn::start(scd_arg);
 		//},
 		//"CreateBranch" => {			
 		//	let scd_arg = std::env::args().nth(2).expect("branch to create wasn't given");
@@ -89,8 +95,6 @@ fn main() {
 		//	let scd_arg = std::env::args().nth(2).expect("version to change wasn't given");
 			//select_fn::start(scd_arg);
 		//},
-		//"info" => print::read_yaml(),
-		//"cmd" => print::print_commands(),
 		//"exit" => return,
 		//_ => {
 			//println!("Command Unknown!");

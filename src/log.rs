@@ -3,7 +3,11 @@ use std::fs;
 use std::io::Write;
 use serde_yaml;
 
-use crate::structs;
+use crate::structs::structs_mod::Log;
+use crate::structs::read_struct_from_file;
+use crate::structs::update_struct_file;
+
+
 use crate::time;
 
 /// Starts logging the specified action.
@@ -24,13 +28,13 @@ pub fn start(action: String) -> Result<(), Box<dyn std::error::Error>> {
 
     let path = "my_vcs/";
 
-    let mut log_struct: structs::structs_mod::Log = structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "log.yml"))?;
+    let mut log_struct: Log = read_struct_from_file(&format!("{}{}", path, "log.yml"))?;
     log_struct.action.push(action);
     log_struct.created_date.push(created_date);
     log_struct.created_time.push(created_time);
 
     // Update the struct file
-    structs::StructWriter::update_struct_file(&format!("{}{}", path, "log.yml"), &log_struct)?;
+    update_struct_file(&format!("{}{}", path, "log.yml"), &log_struct)?;
 
     Ok(())
 }

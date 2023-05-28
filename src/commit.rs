@@ -8,8 +8,12 @@ use diffy;
 use serde_yaml;
 
 use crate::log;
-use crate::structs;
 use crate::remove;
+
+use crate::structs::structs_mod::{BranchChangesLog,FileChangeLog};
+use crate::structs::read_struct_from_file;
+use crate::structs::write_blank_structs_to_files;
+use crate::structs::update_struct_file;
 
 /// Generates a diff patch between the original text and modified text and saves it to a file.
 ///
@@ -145,8 +149,7 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
             for line in lines {
                 let file_path = format!("{}add_contents/{}.yml", path, line);
 
-                let mut branch_changes_log: structs::structs_mod::BranchChangesLog =
-                    structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
+                let mut branch_changes_log: BranchChangesLog = read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
 
                 // Find the file changelog in the branch_changes_log
                 for file_changelog in &mut branch_changes_log.files_changelogs {
@@ -186,17 +189,16 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 // Update the branch_changes_log in the file or source
-                structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
+                update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
             }
         }
         Err(err) => return Err(format!("Error reading file: {}", err).into()),
     }
 
     // Commit new files
-    match read_file_lines(&staging_area_path) {
+    match read_file_lines(&staging_area_path) { 
         Ok(lines) => {
-            let mut branch_changes_log: structs::structs_mod::BranchChangesLog =
-                structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
+            let mut branch_changes_log: BranchChangesLog = read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
 
             for line in lines {
                 let file_path = format!("{}add_contents/{}.yml", path, line);
@@ -205,7 +207,7 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
                 let hash = calculate_file_hash(&format!("{}{}", "./", line))?;
 
 
-                let new_file_change_log = structs::structs_mod::FileChangeLog {
+                let new_file_change_log = FileChangeLog {
                     original_file: String::from(&line),
                     last_file: String::from(&line),
                     original_file_path: String::from("./"),
@@ -225,14 +227,10 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
             }
 
             // Update the branch_changes_log in the file or source
-            structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
+            update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
         }
         Err(err) => return Err(format!("Error creating commit: {}", err).into()),
     }
     log::start(format!("commit {}", message));
-
-
-
-
     Ok(())
 }

@@ -1,0 +1,12 @@
+/home/vitoriano/Documents/cs/Linux&Windows/VCS/target/debug/deps/tempfile-0c8e87ef9a00c399.rmeta: /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/lib.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/dir.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/error.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/mod.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/mod.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/spooled.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/util.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/unix.rs
+
+/home/vitoriano/Documents/cs/Linux&Windows/VCS/target/debug/deps/tempfile-0c8e87ef9a00c399.d: /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/lib.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/dir.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/error.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/mod.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/mod.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/spooled.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/util.rs /home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/unix.rs
+
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/lib.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/dir.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/error.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/mod.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/mod.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/spooled.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/util.rs:
+/home/vitoriano/.cargo/registry/src/github.com-1ecc6299db9ec823/tempfile-3.5.0/src/file/imp/unix.rs:
