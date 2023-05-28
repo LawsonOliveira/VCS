@@ -48,7 +48,7 @@ fn remove_line_from_file(line_to_remove: &str, file_path: &str) -> Result<(), st
 /// # Errors
 ///
 /// Returns an error if there is an issue removing the file.
-fn remove_file(file_path: &str) -> io::Result<()> {
+pub fn remove_file(file_path: &str) -> io::Result<()> {
     fs::remove_file(file_path)?;
     println!("File removed successfully.");
     Ok(())

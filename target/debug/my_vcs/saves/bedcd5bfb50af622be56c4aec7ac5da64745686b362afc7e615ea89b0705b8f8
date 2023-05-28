@@ -1,7 +1,0 @@
---- original
-+++ modified
-@@ -1 +1,2 @@
--text3.txt
-\ No newline at end of file
-+b
-+

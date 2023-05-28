@@ -1,31 +1,42 @@
 action:
 - init
-- 'add text2.txt: fcf9e1c53793c9bf4be121047aad4f5eb5a421bbf0add683cbedbf1482dcd024'
-- 'add text1.txt: cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced'
-- 'add text3.txt: bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8'
+- add text1.txt
 - |-
-  commit mycommit
-  hash: 945a2c2ab6210e5218d6b901c0bf24479e04819e284c96b041ce0f29e969083c
-- 'add text1.txt: cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced'
-- 'add text3.txt: bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8'
+  commit aaaa
+  hash: 6e84407c2e6a5cd25f7c676b657ce65690ed17a73055f4db529fa756333f7b51
+- add text2.txt
 - |-
-  commit mycommit
-  hash: c27faa7373a6518ac2b05c126b14e71c2b211a38cfcaf541b72d49d63bf14975
+  commit bbbb
+  hash: ec43ae550b6c49be258d163696b66437fb6d3fd439e781f9275efbcf4c55da44
+- add text3.txt
+- add text1.txt
+- |-
+  commit ccc
+  hash: 0a2bf781c5c1e58bd7af1e8fe1c3d73609b266be02e9c606d49ab3467878caa7
+- delete 0a2bf781c5c1e58bd7af1e8fe1c3d73609b266be02e9c606d49ab3467878caa7
+- delete 0a2bf781c5c1e58bd7af1e8fe1c3d73609b266be02e9c606d49ab3467878caa7
+- delete 0a2bf781c5c1e58bd7af1e8fe1c3d73609b266be02e9c606d49ab3467878caa7
 created_date:
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
 created_time:
-- 18:29:38
-- 18:29:40
-- 18:29:44
-- 18:29:44
-- 18:29:47
-- 18:30:01
-- 18:30:01
-- 18:30:03
+- 00:17:47
+- 00:17:53
+- 00:18:03
+- 00:18:07
+- 00:18:10
+- 00:18:21
+- 00:18:21
+- 00:18:25
+- 00:28:51
+- 00:30:17
+- 00:33:41

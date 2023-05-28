@@ -182,7 +182,7 @@ pub fn add_to_version_control(file_name: &str) -> io::Result<()> {
     if is_not_added {
         write_line(&file_name_and_hash, &staging_area_path)?;
         copy_file(&file_name, &adds_contents_path)?;
-        log::start(format!("add {}", file_name_and_hash));
+        log::start(format!("add {}", &file_name));
         println!("File added successfully.");
     } else {
         // update hash in the line

@@ -8,6 +8,8 @@ mod add;
 mod remove;
 mod structs;
 mod log;
+mod delete_commit;
+
 
 fn main() {
     // Check if the user provided more than 1 argument
@@ -61,6 +63,15 @@ fn main() {
                 println!("You need to provide a comment for the commit.");
             } else {
                 commit::commit(&args[2]);
+            }
+        },
+        "delete" => {
+            let args: Vec<_> = std::env::args().collect();
+
+            if args.len() != 3 {
+                println!("You need to provide a comment for the commit.");
+            } else {
+                delete_commit::delete(&args[2]);
             }
         },
 		//"print" => print::start(0),

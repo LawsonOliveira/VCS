@@ -25,7 +25,7 @@ pub mod structs_mod {
     pub struct FileChangeLog {
         pub original_file_path: String,
         pub original_file: String,
-        pub hash_changelog: Vec<String>,
+        pub hash_changelog: String,
         pub last_file: String,
         pub hash_files_path: String,
     }
@@ -33,7 +33,7 @@ pub mod structs_mod {
 
     #[derive(Clone, Serialize, Deserialize)]
     pub struct CommitFiles {
-        pub commit_files: Vec<String>,
+        pub files_changelogs: Vec<FileChangeLog>,
         pub commit_hash: String,
     }
 
@@ -41,8 +41,7 @@ pub mod structs_mod {
     #[derive(Serialize, Deserialize)]
     pub struct BranchChangesLog {
         pub branch_name: String,
-        pub files_changelogs: Vec<FileChangeLog>,
-        pub commits_hash: Vec<CommitFiles>,
+        pub commits_files: Vec<CommitFiles>,
     }
 
 }
@@ -70,20 +69,19 @@ impl StructWriter {
         let file_change_log = FileChangeLog {
             original_file_path: String::new(),
             original_file: String::new(),
-            hash_changelog: Vec::new(),
+            hash_changelog: String::new(),
             last_file: String::new(),
             hash_files_path: String::new(),
         };
 
         let commit_files = CommitFiles {
-            commit_files: Vec::new(),
+            files_changelogs: vec![file_change_log.clone()],
             commit_hash: String::new(),
         };
 
         let branch_changes_log = BranchChangesLog {
             branch_name: "./main/".to_string(),
-            files_changelogs: vec![file_change_log.clone()],
-            commits_hash: vec![commit_files.clone()],
+            commits_files: vec![commit_files.clone()],
         };
     
         // Serialize the structs into YAML format
