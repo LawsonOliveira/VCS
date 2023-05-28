@@ -1,0 +1,39 @@
+branch_name: ./main/
+files_changelogs:
+- original_file_path: ''
+  original_file: ''
+  hash_changelog: []
+  last_file: ''
+  hash_files_path: ''
+- original_file_path: ./
+  original_file: text2.txt
+  hash_changelog:
+  - fcf9e1c53793c9bf4be121047aad4f5eb5a421bbf0add683cbedbf1482dcd024
+  last_file: text2.txt
+  hash_files_path: my_vcs/saves/
+- original_file_path: ./
+  original_file: text1.txt
+  hash_changelog:
+  - cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced
+  - cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced
+  last_file: text1.txt
+  hash_files_path: my_vcs/saves/
+- original_file_path: ./
+  original_file: text3.txt
+  hash_changelog:
+  - bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8
+  - bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8
+  last_file: text3.txt
+  hash_files_path: my_vcs/saves/
+commits_hash:
+- commit_files: []
+  commit_hash: ''
+- commit_files:
+  - text2.txt
+  - text1.txt
+  - text3.txt
+  commit_hash: 945a2c2ab6210e5218d6b901c0bf24479e04819e284c96b041ce0f29e969083c
+- commit_files:
+  - text1.txt
+  - text3.txt
+  commit_hash: c27faa7373a6518ac2b05c126b14e71c2b211a38cfcaf541b72d49d63bf14975

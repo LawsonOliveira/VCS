@@ -1,0 +1,31 @@
+action:
+- init
+- 'add text2.txt: fcf9e1c53793c9bf4be121047aad4f5eb5a421bbf0add683cbedbf1482dcd024'
+- 'add text1.txt: cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced'
+- 'add text3.txt: bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8'
+- |-
+  commit mycommit
+  hash: 945a2c2ab6210e5218d6b901c0bf24479e04819e284c96b041ce0f29e969083c
+- 'add text1.txt: cf2c7f63055d2e84af6e3f01ac1bb7fce598d20cf213fab2b56b8e8047b46ced'
+- 'add text3.txt: bedcd5bfb50af622be56c4aec7ac5da64745686b362afc7e615ea89b0705b8f8'
+- |-
+  commit mycommit
+  hash: c27faa7373a6518ac2b05c126b14e71c2b211a38cfcaf541b72d49d63bf14975
+created_date:
+- 28/05/23
+- 28/05/23
+- 28/05/23
+- 28/05/23
+- 28/05/23
+- 28/05/23
+- 28/05/23
+- 28/05/23
+created_time:
+- 18:29:38
+- 18:29:40
+- 18:29:44
+- 18:29:44
+- 18:29:47
+- 18:30:01
+- 18:30:01
+- 18:30:03

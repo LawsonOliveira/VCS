@@ -3,6 +3,7 @@ use std::io;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 
+
 pub mod structs_mod {
     use serde::{Serialize, Deserialize};
 
@@ -29,11 +30,21 @@ pub mod structs_mod {
         pub hash_files_path: String,
     }
 
+
+    #[derive(Clone, Serialize, Deserialize)]
+    pub struct CommitFiles {
+        pub commit_files: Vec<String>,
+        pub commit_hash: String,
+    }
+
+    
     #[derive(Serialize, Deserialize)]
     pub struct BranchChangesLog {
         pub branch_name: String,
         pub files_changelogs: Vec<FileChangeLog>,
+        pub commits_hash: Vec<CommitFiles>,
     }
+
 }
 
 pub struct StructWriter;
@@ -44,9 +55,8 @@ impl StructWriter {
     ///
     /// Returns an error if there is an issue writing the files.
     pub fn write_blank_structs_to_files(&self) -> Result<(), Box<dyn std::error::Error>> {
-        use structs_mod::{Log, Init, FileChangeLog, BranchChangesLog};
+        use structs_mod::{Log, Init, FileChangeLog, CommitFiles, BranchChangesLog};
         let path = "./my_vcs/";
-
         let log = Log {
             action: Vec::new(),
             created_date: Vec::new(),
@@ -64,9 +74,16 @@ impl StructWriter {
             last_file: String::new(),
             hash_files_path: String::new(),
         };
+
+        let commit_files = CommitFiles {
+            commit_files: Vec::new(),
+            commit_hash: String::new(),
+        };
+
         let branch_changes_log = BranchChangesLog {
             branch_name: "./main/".to_string(),
             files_changelogs: vec![file_change_log.clone()],
+            commits_hash: vec![commit_files.clone()],
         };
     
         // Serialize the structs into YAML format
@@ -80,7 +97,7 @@ impl StructWriter {
         fs::write(format!("{}{}", path, "init.yml"), &init_yaml)?;
         //fs::write(format!("{}{}", path, "file_change_log.yml"), &file_change_log_yaml)?;
         fs::write(format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log_yaml)?;
-    
+
         Ok(())
     }
 

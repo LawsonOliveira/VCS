@@ -10,6 +10,7 @@ use serde_yaml;
 use crate::log;
 use crate::structs;
 use crate::remove;
+use crate::add::calculate_file_hash;
 
 /// Generates a diff patch between the original text and modified text and saves it to a file.
 ///
@@ -89,36 +90,6 @@ fn read_file_lines(file_path: &str) -> Result<Vec<String>, std::io::Error> {
     Ok(lines?)
 }
 
-/// Calculates the hash value of a file.
-///
-/// # Arguments
-///
-/// * `file_path` - The path to the file.
-///
-/// # Returns
-///
-/// * The hash value of the file.
-/// * An error if calculating the hash fails.
-///
-fn calculate_file_hash(file_path: &str) -> Result<String, std::io::Error> {
-    let mut file = fs::File::open(file_path)?;
-    let mut hasher = Sha256::new();
-    let mut buffer = [0; 1024];
-
-    loop {
-        let bytes_read = file.read(&mut buffer)?;
-        if bytes_read == 0 {
-            break;
-        }
-        hasher.update(&buffer[..bytes_read]);
-    }
-
-    let result = hasher.finalize();
-    let hash = hex::encode(result);
-
-    Ok(hash)
-}
-
 
 /// Commits the changes.
 ///
@@ -138,55 +109,59 @@ fn calculate_file_hash(file_path: &str) -> Result<String, std::io::Error> {
 pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = "my_vcs/";
     let staging_area_path = format!("{}staging_area.yml", path);
+    // Update the branch_changes_log in the file or source
+    let commit_hash = calculate_file_hash(&staging_area_path)?;
 
-    // Commit files in the staging area
+    let mut branch_changes_log: structs::structs_mod::BranchChangesLog =
+    structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
+    let mut committed_files: Vec<String> = Vec::new();
+
+    
     match read_file_lines(&staging_area_path) {
         Ok(lines) => {
-            for line in lines {
-                let file_path = format!("{}add_contents/{}.yml", path, line);
+            for line in lines {  
 
-                let mut branch_changes_log: structs::structs_mod::BranchChangesLog =
-                    structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
+                let splited_file_name_and_hash: Vec<&str>  = line.split(":").collect();
+                let filename_to_commit = splited_file_name_and_hash[0].trim().to_string();
+                let filehash_to_commit = splited_file_name_and_hash[1].trim().to_string();
+                let file_path = format!("{}add_contents/{}.yml", path, filename_to_commit);
+                committed_files.push(filename_to_commit.clone());
+
 
                 // Find the file changelog in the branch_changes_log
                 for file_changelog in &mut branch_changes_log.files_changelogs {
-                    if file_changelog.original_file == line {
-                        // Calculate the hash of the file
-                        if let Ok(calculated_hash) = calculate_file_hash(&file_path) {
-                            let mut mutable_file_changelog = file_changelog.clone();
-                            let hash = calculated_hash;
+                    if file_changelog.original_file == filename_to_commit {
+                        let mut mutable_file_changelog = file_changelog.clone();
 
-                            let mut previous_version = file_changelog.original_file.clone();
 
-                            // Apply the hash changelogs to the previous version
-                            for hash_diff in &mutable_file_changelog.hash_changelog {
-                                previous_version = apply_patch(
-                                    &previous_version,
-                                    &format!("{}{}.yml", mutable_file_changelog.hash_files_path, hash_diff),
-                                )?;
-                            }
-
-                            let save_path = format!("{}{}", mutable_file_changelog.hash_files_path, hash);
-
-                            // Generate the diff between the previous version and the content to commit
-                            let content_to_commit = fs::read_to_string(&file_path)?;
-                            gen_diff(&previous_version, &content_to_commit, &save_path);
-
-                            mutable_file_changelog.last_file = line.clone();
-                            mutable_file_changelog.hash_changelog.push(hash.clone());
-
-                            // Remove the last version of the file
-                            let use_log = false;
-                            remove::remove(&mutable_file_changelog.last_file, use_log);
-
-                            *file_changelog = mutable_file_changelog;
-
+                        // Apply the hash changelogs to the previous version
+                        let mut previous_version = file_changelog.original_file.clone();
+                        for hash_diff in &mutable_file_changelog.hash_changelog {
+                            previous_version = apply_patch(
+                                &previous_version,
+                                &format!("{}{}.yml", mutable_file_changelog.hash_files_path, hash_diff),
+                            )?;
                         }
+
+                        // Generate the diff between the previous version and the content to commit
+                        let filename_save_path = format!("{}{}", mutable_file_changelog.hash_files_path, filehash_to_commit);
+                        let content_to_commit = fs::read_to_string(&file_path)?;
+                        gen_diff(&previous_version, &content_to_commit, &filename_save_path);
+
+                        mutable_file_changelog.last_file = filename_to_commit.clone();
+                        mutable_file_changelog.hash_changelog.push(filehash_to_commit.clone());
+
+                        // Remove the last version of the file
+                        let use_log = false;
+                        remove::remove(&filename_to_commit, use_log);
+
+                        *file_changelog = mutable_file_changelog;
+
+                        
                     }
                 }
 
-                // Update the branch_changes_log in the file or source
-                structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
+
             }
         }
         Err(err) => return Err(format!("Error reading file: {}", err).into()),
@@ -195,41 +170,46 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Commit new files
     match read_file_lines(&staging_area_path) {
         Ok(lines) => {
-            let mut branch_changes_log: structs::structs_mod::BranchChangesLog =
-                structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
 
             for line in lines {
-                let file_path = format!("{}add_contents/{}.yml", path, line);
-
-                // Calculate the hash of the file
-                let hash = calculate_file_hash(&format!("{}{}", "./", line))?;
+                let splited_file_name_and_hash: Vec<&str>  = line.split(":").collect();
+                let filename_to_commit = splited_file_name_and_hash[0].trim().to_string();
+                let filehash_to_commit = splited_file_name_and_hash[1].trim().to_string();
+                let file_path = format!("{}add_contents/{}.yml", path, filename_to_commit);
 
 
                 let new_file_change_log = structs::structs_mod::FileChangeLog {
-                    original_file: String::from(&line),
-                    last_file: String::from(&line),
+                    original_file: String::from(&filename_to_commit),
+                    last_file: String::from(&filename_to_commit),
                     original_file_path: String::from("./"),
                     hash_files_path: String::from(format!("{}{}", path, "saves/")),
-                    hash_changelog: vec![hash.clone()],
+                    hash_changelog: vec![filehash_to_commit.clone()],
                 };
 
-                let save_path = format!("{}{}", new_file_change_log.hash_files_path, hash);
+                let filename_save_path = format!("{}{}", new_file_change_log.hash_files_path, filehash_to_commit);
                 let content_to_commit = fs::read_to_string(&file_path)?;
-                gen_diff("", &content_to_commit, &save_path);
+                gen_diff("", &content_to_commit, &filename_save_path);
 
                 // Remove the last version of the file
                 let use_log = false;
-                remove::remove(&new_file_change_log.last_file, use_log);
+                remove::remove(&filename_to_commit, use_log);
 
                 branch_changes_log.files_changelogs.push(new_file_change_log);
             }
 
-            // Update the branch_changes_log in the file or source
-            structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
+
         }
         Err(err) => return Err(format!("Error creating commit: {}", err).into()),
     }
-    log::start(format!("commit {}", message));
+
+
+    let new_commit_files = structs::structs_mod::CommitFiles {
+        commit_files: committed_files,
+        commit_hash: commit_hash.clone(),
+    };
+    branch_changes_log.commits_hash.push(new_commit_files);
+    structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log)?;
+    log::start(format!("commit {}\nhash: {}", message, commit_hash));
 
 
 
