@@ -5,7 +5,8 @@ use serde::{Serialize, Deserialize};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
-use diffy;
+use diffy::{apply, Patch, PatchFormatter};
+
 use serde_yaml;
 
 use crate::log;
@@ -13,65 +14,7 @@ use crate::structs;
 use crate::remove;
 use crate::add::calculate_file_hash;
 use crate::structs::structs_mod::{BranchChangesLog, CommitFiles, FileChangeLog};
-/// Generates a diff patch between the original text and modified text and saves it to a file.
-///
-/// # Arguments
-///
-/// * `original_text` - The original text.
-/// * `modified_text` - The modified text.
-/// * `save_path` - The path to save the diff patch file.
-///
-fn gen_diff(original_text: &str, modified_text: &str, save_path: &str) {
-    // Create a patch based on the differences between the original and modified texts
-    let patch = diffy::create_patch(&original_text, &modified_text);
 
-    // Create a new file for writing the patch
-    let file = match fs::File::create(save_path) {
-        Ok(file) => file,
-        Err(error) => {
-            eprintln!("Error creating file: {}", error);
-            return;
-        }
-    };
-
-    // Write the patch into the file
-    if let Err(error) = diffy::PatchFormatter::new().write_patch_into(&patch, &file) {
-        eprintln!("Error writing diff to file: {}", error);
-        return;
-    }
-}
-
-/// Applies a patch to the original text and returns the modified text.
-///
-/// # Arguments
-///
-/// * `original_text` - The original text.
-/// * `patch_text` - The patch text to apply.
-///
-/// # Returns
-///
-/// * The modified text after applying the patch.
-/// * An error if parsing the patch or applying it fails.
-///
-fn apply_patch(original_text: &str, patch_text: &str) -> Result<String, Box<dyn std::error::Error>> {
-    // Parse the patch text into a Patch object
-    let patch = match diffy::Patch::from_str(&patch_text) {
-        Ok(patch) => patch,
-        Err(error) => {
-            return Err(format!("Error parsing patch: {}", error).into());
-        }
-    };
-
-    // Apply the patch to the original text
-    let new_text_version = match diffy::apply(&original_text, &patch) {
-        Ok(new_text) => new_text,
-        Err(error) => {
-            return Err(format!("Error applying patch: {}", error).into());
-        }
-    };
-
-    Ok(new_text_version)
-}
 
 /// Reads the lines from a file and returns them as a vector of strings.
 ///
@@ -92,22 +35,6 @@ fn read_file_lines(file_path: &str) -> Result<Vec<String>, std::io::Error> {
 }
 
 
-/// Commits the changes.
-///
-/// # Arguments
-///
-/// * `message` - A string containing the commit message.
-///
-/// # Examples
-///
-/// ```
-/// let message = "Initial commit";
-/// match commit(message) {
-///     Ok(()) => println!("Changes committed successfully."),
-///     Err(err) => eprintln!("Error committing changes: {}", err),
-/// }
-/// ```
-
 
 
 fn create_file_patch_hashmap(vec_commits_files: &Vec<CommitFiles>) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
@@ -118,17 +45,26 @@ fn create_file_patch_hashmap(vec_commits_files: &Vec<CommitFiles>) -> Result<Has
         for file_change_log in &file_change_logs.files_changelogs {
             let original_file = &file_change_log.original_file;
 
-            if !file_patch_map.contains_key(original_file) {
-                file_patch_map.insert(original_file.clone(), String::new());
-            }
+            if original_file !="Default initialization" {
+                if !file_patch_map.contains_key(original_file)  {
+                    let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
 
-            else{
-                let value = file_patch_map.get_mut(original_file).unwrap();
-                let new_value = apply_patch(value, &format!("{}{}.yml", file_change_log.hash_files_path, file_change_log.hash_changelog))?;
-                value.push_str(&new_value);
+                    let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
+                    let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
+                    let new_value = apply("", &patch).unwrap();
+                    file_patch_map.insert(original_file.clone(), new_value);
                 }
 
-        }
+                else{
+                    let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
+                    let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
+                    let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
+                    let previous_value: &mut String = file_patch_map.get_mut(original_file).unwrap();
+                    
+                    let new_value = apply(&previous_value.to_owned(), &patch).unwrap();
+                    file_patch_map.insert(original_file.clone(), new_value.clone());
+                }
+        }   }
     }
     return Ok(file_patch_map);
 }
@@ -143,7 +79,6 @@ fn push_tracked_file(line: &str, path: &str, branch_changes_log: &BranchChangesL
     let filehash_to_commit = splited_file_name_and_hash[1].trim().to_string();
     let file_path = format!("{}add_contents/{}.yml", path, filename_to_commit);
     let file_last_patch_hashmap = create_file_patch_hashmap(&branch_changes_log.commits_files)?;
-
     if file_last_patch_hashmap.contains_key(&filename_to_commit) {
         let mut original_file: String = String::new();
         let mut last_file: String = String::new();
@@ -172,7 +107,11 @@ fn push_tracked_file(line: &str, path: &str, branch_changes_log: &BranchChangesL
         let filename_save_path = format!("{}{}", new_file_change_log.hash_files_path, new_file_change_log.hash_changelog);
         let content_to_commit = fs::read_to_string(&file_path)?;
         let previous_version: String = file_last_patch_hashmap.get(&filename_to_commit).ok_or_else(|| -> String{format!("Previous version not found for: {}", filename_to_commit).into()})?.to_string();
-        gen_diff(&previous_version, &content_to_commit, &filename_save_path);
+
+        // Gen dff
+        let file = fs::File::create(filename_save_path)?;
+        let patch = diffy::create_patch(&previous_version, &content_to_commit);
+        PatchFormatter::new().write_patch_into(&patch, &file);
 
         new_commit_files.files_changelogs.push(new_file_change_log);
         // Remove the last version of the file
@@ -203,7 +142,10 @@ fn track_and_push_file(line: &str, path: &str, original_file_path: &str, new_com
 
     let filename_save_path = format!("{}{}", new_file_change_log.hash_files_path, new_file_change_log.hash_changelog);
     let content_to_commit = fs::read_to_string(&file_path)?;
-    gen_diff("", &content_to_commit, &filename_save_path);
+
+    let file = fs::File::create(filename_save_path)?;
+    let patch = diffy::create_patch("", &content_to_commit);
+    PatchFormatter::new().write_patch_into(&patch, &file);
 
     // Remove the last version of the file
     let use_log = false;
@@ -239,7 +181,7 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // Update branch_changes_log
     new_commit_files.commit_hash = commit_hash.clone();
-    if branch_changes_log.branch_name == String::new(){
+    if branch_changes_log.branch_name == "Default initialization" {
         branch_changes_log.branch_name = branch_name.to_string();
         branch_changes_log.commits_files = vec![new_commit_files.clone()];
     }
@@ -250,4 +192,3 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
