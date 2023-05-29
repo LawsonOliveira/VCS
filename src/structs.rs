@@ -67,20 +67,20 @@ impl StructWriter {
             current_path: String::new(),
         };
         let file_change_log = FileChangeLog {
-            original_file_path: String::new(),
-            original_file: String::new(),
-            hash_changelog: String::new(),
-            last_file: String::new(),
-            hash_files_path: String::new(),
+            original_file_path: String::from("Default initialization")  ,
+            original_file: String::from("Default initialization")  ,
+            hash_changelog: String::from("Default initialization")  ,
+            last_file: String::from("Default initialization") ,
+            hash_files_path: String::from("Default initialization")  ,
         };
 
         let commit_files = CommitFiles {
             files_changelogs: vec![file_change_log.clone()],
-            commit_hash: String::new(),
+            commit_hash: String::from("Default initialization")  ,
         };
 
         let branch_changes_log = BranchChangesLog {
-            branch_name: "./main/".to_string(),
+            branch_name: String::from("Default initialization") ,
             commits_files: vec![commit_files.clone()],
         };
     

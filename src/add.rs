@@ -95,26 +95,27 @@ pub fn verify_file_exists(file_path: &str) -> io::Result<()> {
 /// # Errors
 ///
 /// Returns an `Err` if there was an error reading the file.
-pub fn verify_if_file_is_not_added(line: &str, file_path: &str) -> io::Result<bool> {
+pub fn verify_if_file_is_not_added(file_name: &str, file_path: &str) -> io::Result<bool> {
     let file_content = fs::read_to_string(file_path)?;
+    let pattern = format!(r"\b{}\b", regex::escape(file_name));
+    let regex = regex::Regex::new(&pattern).unwrap();
 
-    let lines: Vec<&str> = file_content.lines().collect();
-
-    Ok(!lines.contains(&line))
+    Ok(!regex.is_match(&file_content))
+    //Ok(!file_content.contains(&file_name))
 }
 
-/// Calculate the hash value of a file.
-///
-/// This function calculates the SHA-256 hash value of the file at the given file path.
+/// Calculates the hash value of a file.
 ///
 /// # Arguments
 ///
-/// * `file_path` - The path of the file to calculate the hash for.
+/// * `file_path` - The path to the file.
 ///
-/// # Errors
+/// # Returns
 ///
-/// Returns an `Err` if there was an error reading the file or calculating the hash.
-pub fn calculate_file_hash(file_path: &str) -> io::Result<String> {
+/// * The hash value of the file.
+/// * An error if calculating the hash fails.
+///
+pub fn calculate_file_hash(file_path: &str) -> Result<String, std::io::Error> {
     let mut file = fs::File::open(file_path)?;
     let mut hasher = Sha256::new();
     let mut buffer = [0; 1024];
@@ -133,6 +134,22 @@ pub fn calculate_file_hash(file_path: &str) -> io::Result<String> {
     Ok(hash)
 }
 
+
+
+pub fn replace_line_in_file(filename: &str, replacement: &str, file_path: &str) -> Result<(), std::io::Error> {
+    let search_pattern = format!("{}: {}", filename, "[a-f0-9]+\n");
+    let content = fs::read_to_string(file_path)?;
+    let regex = regex::Regex::new(&search_pattern).unwrap();
+    let replaced_content = regex.replace_all(&content, replacement);
+
+    fs::write(file_path, replaced_content.into_owned())?;
+
+    Ok(())
+}
+
+
+
+
 /// Add a file to the version control system.
 ///
 /// This function adds the specified file to the version control system.
@@ -148,24 +165,29 @@ pub fn calculate_file_hash(file_path: &str) -> io::Result<String> {
 /// Returns an `Err` if there was an error adding the file.
 pub fn add_to_version_control(file_name: &str) -> io::Result<()> {
     let base_path = "my_vcs/";
-    let file_path = file_name.to_owned();
+    let file_path = format!("{}{}", base_path, file_name);
     let staging_area_path = format!("{}staging_area.yml", base_path);
     let adds_contents_path = format!("{}/add_contents/{}.yml", base_path, file_name);
+    let file_hash = calculate_file_hash(&file_name)?;
+    let file_name_and_hash = format!("{}: {}", file_name, file_hash);
+
 
     // Create the staging area file if it doesn't exist
     if fs::metadata(&staging_area_path).is_err() {
         fs::File::create(&staging_area_path)?;
     }
 
-    let is_not_added = verify_if_file_is_not_added(&file_path, &staging_area_path)?;
+    let is_not_added = verify_if_file_is_not_added(&file_name, &staging_area_path)?;
 
     if is_not_added {
-        write_line(&file_path, &staging_area_path)?;
-        copy_file(&file_path, &adds_contents_path)?;
-        log::start(format!("add {}", file_name));
+        write_line(&file_name_and_hash, &staging_area_path)?;
+        copy_file(&file_name, &adds_contents_path)?;
+        log::start(format!("add {}", &file_name));
         println!("File added successfully.");
     } else {
-        copy_file(&file_path, &adds_contents_path)?;
+        // update hash in the line
+        replace_line_in_file(&file_name, &format!("{}\n", file_name_and_hash), &staging_area_path);
+        copy_file(&file_name, &adds_contents_path)?;
         println!("File version updated in the staging area");
     }
 

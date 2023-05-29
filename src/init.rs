@@ -3,12 +3,8 @@ use std::env;
 use std::fs;
 use std::io;
 
+use crate::structs;
 use crate::time;
-
-use crate::structs::structs_mod::Init;
-use crate::structs::read_struct_from_file;
-use crate::structs::write_blank_structs_to_files;
-use crate::structs::update_struct_file;
 
 /// Starts the VCS initialization process.
 pub fn start_vcs() {
@@ -22,7 +18,7 @@ pub fn start_vcs() {
             //fs::File::create("my_vcs/init.yml");
             fs::create_dir("my_vcs/saves");
 
-            if let Err(err) = write_blank_structs_to_files() {
+            if let Err(err) = structs::StructWriter::write_blank_structs_to_files(&structs::StructWriter) {
                 // Handle the error
                 if let Some(io_error) = err.downcast_ref::<io::Error>() {
                     // Handle IO error
@@ -55,13 +51,13 @@ fn add_info() -> Result<(), Box<dyn std::error::Error>> {
     let created_time = time_date[1].clone();
     let path = "my_vcs/";
 
-    let mut init_struct : Init= read_struct_from_file(&format!("{}{}", path, "init.yml"))?;
+    let mut init_struct: structs::structs_mod::Init = structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "init.yml"))?;
     init_struct.created_date = created_date;
     init_struct.created_time = created_time;
     init_struct.current_path = cwd;
 
     // Update the struct file
-    update_struct_file(&format!("{}{}", path, "init.yml"), &init_struct)?;
+    structs::StructWriter::update_struct_file(&format!("{}{}", path, "init.yml"), &init_struct)?;
 
     println!("Initialized!");
 

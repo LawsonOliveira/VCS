@@ -1,7 +1,7 @@
 // PACKAGES
 use serde_yaml;
 use crate::structs::structs_mod::{Log,Init,FileChangeLog};
-use crate::structs::read_struct_from_file;
+use crate::structs::StructWriter;
 /// Prints available commands.
 pub fn print_commands() {
     println!("Commands:\n");
@@ -21,7 +21,7 @@ pub fn print_commands() {
 
 /// Prints project initialization information.
 pub fn print_init() {
-    let  info : Init = read_struct_from_file("my_vcs/init.yml").unwrap();
+    let  info : Init = StructWriter::read_struct_from_file("my_vcs/init.yml").unwrap();
 
     println!(
         "\nINFO: created date: {} - {}\n  current path: {}\n\n",
@@ -39,15 +39,13 @@ pub fn print_init() {
 
 /// Prints all information including project initialization and log entries.
 pub fn print_log(){
-    let log: Log = read_struct_from_file("my_vcs/log.yml").unwrap();
+    let log: Log = StructWriter::read_struct_from_file("my_vcs/log.yml").unwrap();
 
     for i in 0..log.action.len() {
         if log.action.contains(&"commit".to_string()){
             println!("{}", log.created_date[i]);
             println!("{}", log.action[i]);
             println!("{}", log.created_time[i]);
-            println!("{}", log.hash[i]);
-
         }else{
             println!("{}", log.created_date[i]);
             println!("{}", log.action[i]);

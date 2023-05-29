@@ -1,15 +1,15 @@
 pub mod branch{
-    use crate::structs::structs_mod::BranchChangesLog;
+    use crate::structs::structs_mod::{BranchChangesLog,Branches};
     const branch_patch: String = "./my_vcs/";
 
     //verify if version desired exists
-    fn verify_if_branch_exists(version_to_verify:&str,branch :BranchChangesLog) -> Result< i32, std::io::Error> {
-        for i in 0..branch.files_changelogs.len(){
-            if branch.files_changelogs[i].hash_changelog.contains(&version_to_verify){
+    fn verify_if_branch_exists(branch_to_verify:&str,branch :&Branches) -> Result< usize, std::io::Error> {
+        for i in 0..branch.branches.len(){
+            if branch.branches[i].branch_name == branch_to_verify{
                 Ok(i)
             }
         }
-        Error("version doesnt exists")
+        Error("branch doesnt exists")
     }
 
     pub fn create_branch(branch_name: &str){
@@ -26,4 +26,11 @@ pub mod branch{
     pub fn change_branch(version_to_verify:&str,branch :BranchChangesLog) -> Result< (), std::io::Error>{      
 
     } 
+    pub fn change_branch(branch_name: &str){
+
+    }
+
+    pub fn delete_branch(branch_name: &str){
+
+    }
 }

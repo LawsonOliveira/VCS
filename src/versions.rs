@@ -1,5 +1,5 @@
 pub mod version_fn{
-    const PATH: &str = "myvcs/";
+    const PATH: &str = "my_vcs/branch_changes_log.yml";
 
     use crate::structs::structs_mod::{BranchChangesLog,CommitFiles};
     use diffy::{apply, Patch};
@@ -29,6 +29,7 @@ pub mod version_fn{
     
     pub fn change_version(version_to_verify:&str) -> Result< (), std::io::Error>{
 
+        println!("{}",PATH);
         let branch :BranchChangesLog = StructWriter::read_struct_from_file(PATH).unwrap();
 
         //split the vector [version,last_hash] rest
@@ -38,29 +39,37 @@ pub mod version_fn{
         let mut file_map: HashMap<String, (String, String)> = HashMap::new();
 
 
-        for commit_file in left{
+        for commit_file in left.to_owned(){
             for file_change_log in commit_file.files_changelogs{
 
                 let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
                 let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
-                let patch = Patch::from_str(&diff_content).unwrap();
+                let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
                 
                 let path_current_file = format!("{}{}",file_change_log.original_file_path,file_change_log.original_file);
                 
                 if let Some(string_value) = file_map.get_mut(&file_change_log.original_file) {
                     // Key is present, insert the difference between the patch inside and the current patch
                     string_value.0 = (apply(&string_value.0.to_owned(), &patch).unwrap());
+                    println!("StringValue.0: {}",&string_value.0);
+
                     string_value.1 = path_current_file;
                 } else {
                     // Key is not present, insert the difference between a empty string and the current patch
-                    let patch = apply("", &patch).unwrap();
-                    file_map.insert(file_change_log.original_file.clone(), (patch,path_current_file));
+                    let patch_diff = apply("", &patch).unwrap();
+                    println!("StringValue.0 init: {}",&patch_diff);
+                    file_map.insert(file_change_log.original_file.clone(), (patch_diff,path_current_file));
+
                     
                 }
             }
         }
         for (original_file, (patch, hash_files_path)) in file_map.iter() {
-            overwrite_file_with_string(&hash_files_path,&patch)?; 
+            println!("Patch final: {}",patch);
+            let mut f = std::fs::OpenOptions::new().write(true).truncate(true).open(hash_files_path)?;
+            f.write(patch.as_bytes())?;
+            f.flush()?;
+            //overwrite_file_with_string(&hash_files_path,&patch)?; 
         }
         Ok(())       
     }

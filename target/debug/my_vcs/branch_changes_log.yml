@@ -1,19 +1,38 @@
 branch_name: ./main/
-files_changelogs:
-- original_file_path: ''
-  original_file: ''
-  hash_changelog: []
-  last_file: ''
-  hash_files_path: ''
-- original_file_path: ./
-  original_file: text2.txt
-  hash_changelog:
-  - aeaeac542215d934f1bddc8787e1d1c7852c36b56cb4ded02ef0c721e12feacb
-  last_file: text2.txt
-  hash_files_path: my_vcs/saves/
-- original_file_path: ./
-  original_file: text1.txt
-  hash_changelog:
-  - a532fe98a4187089aa6028be8a152a03bee198c7c4aa42e5b804177c11962860
-  last_file: text1.txt
-  hash_files_path: my_vcs/saves/
+commits_files:
+- files_changelogs:
+  - original_file_path: ./
+    original_file: text1.txt
+    hash_changelog: 951b628a498f89fb64d72cb1ef3f4dc3094d74d792bd2b9b4b9ce6dca35b30e2
+    last_file: text1.txt
+    hash_files_path: my_vcs/saves/
+  - original_file_path: ./
+    original_file: text2.txt
+    hash_changelog: d877171d944da5148020bb274938770b611502644130ada65e2b333dbd47e442
+    last_file: text2.txt
+    hash_files_path: my_vcs/saves/
+  commit_hash: 0a2f20286da5df4d1406947bb39e8dcd1306deb04e45dec840cf628c0275b251
+- files_changelogs:
+  - original_file_path: ./
+    original_file: text1.txt
+    hash_changelog: 67dc9bb7beeb4065f63e08628c59c7e156e6f1c913007f5be154708a45f9b228
+    last_file: text1.txt
+    hash_files_path: my_vcs/saves/
+  - original_file_path: ./
+    original_file: text2.txt
+    hash_changelog: 637f96a2b7ad9be5d6cbe98c38577fed587abe5a3e8fa2960281a6805579051d
+    last_file: text2.txt
+    hash_files_path: my_vcs/saves/
+  commit_hash: 77d092517c08cb353178634143ee994144fe986c4f9fb5e28a8ad15312ee3f05
+- files_changelogs:
+  - original_file_path: ./
+    original_file: text1.txt
+    hash_changelog: bef670e2ca9bac7847c41d6185af0491260349479d3883bf80db87168f84ebb4
+    last_file: text1.txt
+    hash_files_path: my_vcs/saves/
+  - original_file_path: ./
+    original_file: text2.txt
+    hash_changelog: d877171d944da5148020bb274938770b611502644130ada65e2b333dbd47e442
+    last_file: text2.txt
+    hash_files_path: my_vcs/saves/
+  commit_hash: bac15d3411c931412a5f350c0d03171c984e9827c4b331a818ea13227601e42f

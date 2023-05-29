@@ -3,6 +3,7 @@ use std::fs;
 use std::io;
 
 use crate::log;
+use crate::add::{verify_if_file_is_not_added, replace_line_in_file};
 
 /// Removes a specific line from a file.
 ///
@@ -36,13 +37,7 @@ fn remove_line_from_file(line_to_remove: &str, file_path: &str) -> Result<(), st
 /// # Errors
 ///
 /// Returns an error if there is an issue reading the file.
-fn verify_if_file_is_added(line_to_verify: &str, file_path: &str) -> Result<bool, std::io::Error> {
-    let file_content = fs::read_to_string(file_path)?;
 
-    let lines: Vec<&str> = file_content.lines().collect();
-
-    Ok(lines.contains(&line_to_verify))
-}
 
 /// Removes a file from the file system.
 ///
@@ -53,8 +48,9 @@ fn verify_if_file_is_added(line_to_verify: &str, file_path: &str) -> Result<bool
 /// # Errors
 ///
 /// Returns an error if there is an issue removing the file.
-fn remove_file(file_path: &str) -> io::Result<()> {
+pub fn remove_file(file_path: &str) -> io::Result<()> {
     fs::remove_file(file_path)?;
+    println!("File removed successfully.");
     Ok(())
 }
 
@@ -67,36 +63,31 @@ fn remove_file(file_path: &str) -> io::Result<()> {
 /// # Errors
 ///
 /// Returns an error if there is an issue removing the file or updating the log.
-pub fn remove(file_to_remove: &str, use_log: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub fn remove(filename: &str, use_log: bool) -> Result<(), Box<dyn std::error::Error>> {
     let path = "my_vcs/";
-    let line_to_remove = file_to_remove.to_string();
-    let file_path2remove = format!("{}add_contents/{}.yml", path, file_to_remove);
     let staging_area_path = format!("{}staging_area.yml", path);
+    let file_path2remove = format!("{}add_contents/{}.yml", path, filename);
 
-    // Create the staging area file if it doesn't exist
-    if fs::metadata(&staging_area_path).is_err() {
-        let _ = fs::File::create(&staging_area_path);
-    }
 
     // Check if the file is already added
-    match verify_if_file_is_added(&line_to_remove, &staging_area_path) {
-        Ok(true) => {
+    match verify_if_file_is_not_added(&filename, &staging_area_path) {
+        Ok(true) => println!("File is not in the staging area.\n"),
+        Ok(false) => {
             // Remove the line from the staging area file
-            if let Err(error) = remove_line_from_file(&line_to_remove, &staging_area_path) {
+            if let Err(error) = replace_line_in_file(&filename, "", &staging_area_path) {
                 return Err(format!("Error removing line from file: {}", error).into());
             } else {
                 if let Err(err) = remove_file(&file_path2remove) {
                     return Err(format!("Error removing file: {}", err).into());
                 }
+                println!("File removed from the staging area.");
                 if use_log {
-                    log::start(format!("remove {}", file_to_remove));
+                    log::start(format!("remove {}", filename));
                 }
             }
-        }
-        Ok(false) => println!("File is not in the staging area.\n"),
+        },
         Err(error) => return Err(format!("Error verifying file existence: {}", error).into()),
     }
 
     Ok(())
 }
-

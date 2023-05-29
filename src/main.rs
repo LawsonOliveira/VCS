@@ -9,8 +9,19 @@ mod remove;
 mod structs;
 mod log;
 mod delete_commit;
+mod versions;
+use std::fs;
+
+pub fn VCS_is_initialized(dir_path: &str) -> bool {
+    if let Ok(metadata) = fs::metadata(dir_path) {
+        metadata.is_dir()
+    } else {
+        false
+    }
+}
 
 fn main() {
+    const path : &str = "my_vcs";
     // Check if the user provided more than 1 argument
     {
         let args: Vec<_> = std::env::args().collect();
@@ -27,56 +38,103 @@ fn main() {
     match first_arg.as_ref() {
         "init" => init::start_vcs(),
         "add" => {
-            let args: Vec<_> = std::env::args().collect();
+            if VCS_is_initialized(path){
+                let args: Vec<_> = std::env::args().collect();
+                if args.len() < 3 {
+                    println!("You need to provide at least one file to add.");
+                } else {
+                    for arg in std::env::args().skip(2) {
+                        let file_exists = std::path::Path::new(&arg).exists();
 
-            if args.len() < 3 {
-                println!("You need to provide at least one file to add.");
-            } else {
-                for arg in std::env::args().skip(2) {
-                    let file_exists = std::path::Path::new(&arg).exists();
-
-                    if file_exists {
-                        add::add_to_version_control(&arg);
-                    } else {
-                        println!("File does not exist: {}", arg);
+                        if file_exists {
+                            add::add_to_version_control(&arg);
+                        } else {
+                            println!("File does not exist: {}", arg);
+                        }
                     }
                 }
+            }else{
+                println!("You must initialize first!")
             }
+
         }
         "remove" => {
-            let args: Vec<_> = std::env::args().collect();
+            if VCS_is_initialized(path){
 
-            if args.len() < 3 {
-                println!("You need to provide at least one file to remove.");
-            } else {
-                for arg in std::env::args().skip(2) {
-                    let use_log = true;
-                    remove::remove(&arg, use_log);
+                let args: Vec<_> = std::env::args().collect();
+
+                if args.len() < 3 {
+                    println!("You need to provide at least one file to remove.");
+                } else {
+                    for arg in std::env::args().skip(2) {
+                        let use_log = true;
+                        remove::remove(&arg, use_log);
+                    }
                 }
+            }else{
+                println!("You must initialize first!")
             }
         }
+        "version" => {
+            if VCS_is_initialized(path){
+
+                let args: Vec<_> = std::env::args().collect();
+
+                if args.len() < 3 {
+                    println!("You need to provide the version");
+                } else {
+                    versions::version_fn::change_version(&args[2]);
+                }
+            }else{
+                println!("You must initialize first!")
+            }
+        },
+
         "commit" => {
+            if VCS_is_initialized(path){
+
+                let args: Vec<_> = std::env::args().collect();
+
+                if args.len() != 3 {
+                    println!("You need to provide a comment for the commit.");
+                } else {
+                    commit::commit(&args[2]);
+                }
+            }else{
+                println!("You must initialize first!")
+            }
+        },
+        "delete" => {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
                 println!("You need to provide a comment for the commit.");
             } else {
-                commit::commit(&args[2]);
+                delete_commit::delete(&args[2]);
             }
         },
-        "deletecommit" =>{
-            let args: Vec<_> = std::env::args().collect();
-
-            if args.len() != 3 {
-                println!("You need to provide commit hash to delet.");
-            } else {
-                delete_commit::delete_commit_fn::remove(&args[2]);
+		"print_log" => {
+            if VCS_is_initialized(path){
+                print::print_log();
+            }else{
+                println!("You must initialize first!")
             }
         },
-		"print_log" => print::print_log(),
-        "print_init" => print::print_init(),
-        "commands" => print::print_commands(),
+        "print_init" => {
+            if VCS_is_initialized(path){
+                print::print_init();
+            }else{
+                println!("You must initialize first!")
+            }
+        },
 
+        "commands" =>{
+            if VCS_is_initialized(path){
+                print::print_commands();
+            }else{
+                println!("You must initialize first!")
+            }
+        },
 
 		&_ => todo!(),
 		//"select" => {

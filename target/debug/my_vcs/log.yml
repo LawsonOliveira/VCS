@@ -1,28 +1,64 @@
 action:
 - init
-- add text2.txt
 - add text1.txt
-- commit adicasfdadfasdfasdfi
 - add text2.txt
-- commit adicasfdad
+- |-
+  commit abc
+  hash: ae70369f30380e3cc493a896fb082c2ad96d5ecdced03b11f2225c26010815a1
+- add text1.txt
 - add text2.txt
-- commit adicasfdsadf
+- |-
+  commit abcd
+  hash: e5a4dcc47cb367637b1fa48dc93bacb7718cd20101d9874ee209aee3de19f347
+- delete ae70369f30380e3cc493a896fb082c2ad96d5ecdced03b11f2225c26010815a1
+- add text1.txt
+- add text2.txt
+- |-
+  commit abcde
+  hash: 0a2f20286da5df4d1406947bb39e8dcd1306deb04e45dec840cf628c0275b251
+- add text1.txt
+- add text2.txt
+- |-
+  commit abcded
+  hash: 77d092517c08cb353178634143ee994144fe986c4f9fb5e28a8ad15312ee3f05
+- add text1.txt
+- add text2.txt
+- |-
+  commit abcdeddasf
+  hash: bac15d3411c931412a5f350c0d03171c984e9827c4b331a818ea13227601e42f
 created_date:
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
-- 28/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
+- 29/05/23
 created_time:
-- 16:43:39
-- 16:43:45
-- 16:43:45
-- 16:43:50
-- 16:43:55
-- 16:43:58
-- 16:44:07
-- 16:44:11
-hash: []
+- 14:08:05
+- 14:08:07
+- 14:08:07
+- 14:08:08
+- 14:08:17
+- 14:08:17
+- 14:08:19
+- 14:09:49
+- 14:10:44
+- 14:10:44
+- 14:10:48
+- 14:10:58
+- 14:10:58
+- 14:10:59
+- 14:12:49
+- 14:12:49
+- 14:14:21
