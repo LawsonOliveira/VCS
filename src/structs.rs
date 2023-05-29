@@ -66,34 +66,20 @@ impl StructWriter {
             created_time: String::new(),
             current_path: String::new(),
         };
-        let file_change_log = FileChangeLog {
-            original_file_path: String::from("Default initialization")  ,
-            original_file: String::from("Default initialization")  ,
-            hash_changelog: String::from("Default initialization")  ,
-            last_file: String::from("Default initialization") ,
-            hash_files_path: String::from("Default initialization")  ,
-        };
-
-        let commit_files = CommitFiles {
-            files_changelogs: vec![file_change_log.clone()],
-            commit_hash: String::from("Default initialization")  ,
-        };
 
         let branch_changes_log = BranchChangesLog {
             branch_name: String::from("Default initialization") ,
-            commits_files: vec![commit_files.clone()],
+            commits_files: Vec::new(),
         };
     
         // Serialize the structs into YAML format
         let log_yaml = serde_yaml::to_string(&log)?;
         let init_yaml = serde_yaml::to_string(&init)?;
-        let file_change_log_yaml = serde_yaml::to_string(&file_change_log)?;
         let branch_changes_log_yaml = serde_yaml::to_string(&branch_changes_log)?;
     
         // Write the YAML strings to files
         fs::write(format!("{}{}", path, "log.yml"), &log_yaml)?;
         fs::write(format!("{}{}", path, "init.yml"), &init_yaml)?;
-        //fs::write(format!("{}{}", path, "file_change_log.yml"), &file_change_log_yaml)?;
         fs::write(format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log_yaml)?;
 
         Ok(())

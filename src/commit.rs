@@ -44,27 +44,25 @@ fn create_file_patch_hashmap(vec_commits_files: &Vec<CommitFiles>) -> Result<Has
     for file_change_logs in vec_commits_files{
         for file_change_log in &file_change_logs.files_changelogs {
             let original_file = &file_change_log.original_file;
+            if !file_patch_map.contains_key(original_file)  {
+                let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
 
-            if original_file !="Default initialization" {
-                if !file_patch_map.contains_key(original_file)  {
-                    let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
+                let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
+                let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
+                let new_value = apply("", &patch).unwrap();
+                file_patch_map.insert(original_file.clone(), new_value);
+            }
 
-                    let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
-                    let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
-                    let new_value = apply("", &patch).unwrap();
-                    file_patch_map.insert(original_file.clone(), new_value);
-                }
-
-                else{
-                    let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
-                    let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
-                    let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
-                    let previous_value: &mut String = file_patch_map.get_mut(original_file).unwrap();
-                    
-                    let new_value = apply(&previous_value.to_owned(), &patch).unwrap();
-                    file_patch_map.insert(original_file.clone(), new_value.clone());
-                }
-        }   }
+            else{
+                let diff_path = format!("{}{}",file_change_log.hash_files_path,file_change_log.hash_changelog);
+                let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
+                let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
+                let previous_value: &mut String = file_patch_map.get_mut(original_file).unwrap();
+                
+                let new_value = apply(&previous_value.to_owned(), &patch).unwrap();
+                file_patch_map.insert(original_file.clone(), new_value.clone());
+            }
+        }   
     }
     return Ok(file_patch_map);
 }
