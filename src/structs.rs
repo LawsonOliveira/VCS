@@ -80,7 +80,7 @@ impl StructWriter {
         };
 
         let branch_changes_log = BranchChangesLog {
-            branch_name: "./main/".to_string(),
+            branch_name: String::new(),
             commits_files: vec![commit_files.clone()],
         };
     
