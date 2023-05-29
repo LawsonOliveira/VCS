@@ -169,10 +169,11 @@ pub fn commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
                     let mut hash_files_path: String = String::new();
                     for commit_files in &branch_changes_log.commits_files {
                         for file_change_log in &commit_files.files_changelogs{
-                            original_file = file_change_log.original_file.clone();
-                            last_file = file_change_log.original_file.clone();
-                            original_file_path = file_change_log.original_file.clone();
-                            hash_files_path = file_change_log.original_file.clone();
+                            if filename_to_commit==file_change_log.original_file{
+                                original_file = file_change_log.original_file.clone();
+                                last_file = file_change_log.last_file.clone();
+                                original_file_path = file_change_log.original_file_path.clone();
+                                hash_files_path = file_change_log.hash_files_path.clone();}
                         }    
                     }
 

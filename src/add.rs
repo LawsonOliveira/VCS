@@ -186,7 +186,7 @@ pub fn add_to_version_control(file_name: &str) -> io::Result<()> {
         println!("File added successfully.");
     } else {
         // update hash in the line
-        replace_line_in_file(&file_name, &file_name_and_hash, &staging_area_path);
+        replace_line_in_file(&file_name, &format!("{}\n", file_name_and_hash), &staging_area_path);
         copy_file(&file_name, &adds_contents_path)?;
         println!("File version updated in the staging area");
     }
