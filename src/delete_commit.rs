@@ -9,10 +9,10 @@ fn verify_if_commit_exist(commit_to_verify: &str, branch: &BranchChangesLog) -> 
     let mut index: i32=-1;
     for (i, commit_file) in branch.commits_files.iter().enumerate() {
         if commit_file.commit_hash == commit_to_verify {
-            index = (i+1) as i32;
+            index = i as i32;
         }
     }
-    if index>0{Ok(index as usize)}
+    if index>=0{Ok(index as usize)}
     else {Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))}
 }
 
