@@ -6,12 +6,14 @@ use crate::structs;
 use crate::log;
 
 fn verify_if_commit_exist(commit_to_verify: &str, branch: &BranchChangesLog) -> Result<usize, std::io::Error> {
-    for (index, commit_file) in branch.commits_files.iter().enumerate() {
+    let mut index: i32=-1;
+    for (i, commit_file) in branch.commits_files.iter().enumerate() {
         if commit_file.commit_hash == commit_to_verify {
-            return Ok(index);
+            index = i as i32;
         }
     }
-    Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))
+    if index>0{Ok(index as usize)}
+    else {Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))}
 }
 
 fn verify_if_left_commits_use_the_diff(commit_hash_to_verify: &str, left: &[CommitFiles]) -> bool {
