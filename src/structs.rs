@@ -40,7 +40,7 @@ pub mod structs_mod {
         pub parent_commits: Vec<String>,  // Added: List of parent commit hashes
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct Branch {
         pub branch_name: String,
         pub head_commit_hash: String,  // Added: Hash of the latest commit in the branch
@@ -63,7 +63,7 @@ impl StructWriter {
     ///
     /// Returns an error if there is an issue writing the files.
     pub fn write_blank_structs_to_files(&self) -> Result<(), Box<dyn std::error::Error>> {
-        use structs_mod::{Log, Init, Repository};
+        use structs_mod::{Log, Init, Branch, Repository};
         let path = "./my_vcs/";
         let log = Log {
             action: Vec::new(),
@@ -75,10 +75,15 @@ impl StructWriter {
             created_time: String::new(),
             current_path: String::new(),
         };
-
+        let main_branch = Branch {
+            branch_name: String::from("main"),
+            head_commit_hash: String::new(),  // Added: Hash of the latest commit in the branch
+            commits: Vec::new()  // Added: List of commits in the branch
+        };
+        
         let my_repo = Repository {
             current_branch: String::from("main"),
-            branches: Vec::new(), 
+            branches: vec![main_branch.clone()],
         };
     
         // Serialize the structs into YAML format

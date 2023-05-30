@@ -10,6 +10,7 @@ mod structs;
 mod log;
 mod delete_commit;
 mod change_version;
+mod branches;
 
 fn main() {
     // Check if the user provided more than 1 argument
@@ -81,6 +82,24 @@ fn main() {
                 println!("You need to provide a comment for the commit.");
             } else {
                 change_version::checkout(&args[2]);
+            }
+        },
+        "create_branch" => {
+            let args: Vec<_> = std::env::args().collect();
+
+            if args.len() != 3 {
+                println!("You need to provide a comment for the commit.");
+            } else {
+                branches::create_branch(&args[2]);
+            }
+        },
+        "change_branch" => {
+            let args: Vec<_> = std::env::args().collect();
+
+            if args.len() != 3 {
+                println!("You need to provide a comment for the commit.");
+            } else {
+                branches::change_branch(&args[2]);
             }
         },
 		//"print" => print::start(0),
