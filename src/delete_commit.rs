@@ -1,60 +1,77 @@
 use std::fs;
 use serde::{Deserialize, Serialize};
 use serde_yaml::{self};
-use crate::structs::structs_mod::{FileChangeLog, CommitFiles, BranchChangesLog};
+use std::io;
+use crate::structs::structs_mod::{FileChangeLog, Branch};
 use crate::structs;
 use crate::log;
+use crate::commit::{build_commit_tree};
 
-fn verify_if_commit_exist(commit_to_verify: &str, branch: &BranchChangesLog) -> Result<usize, std::io::Error> {
-    let mut index: i32=-1;
-    for (i, commit_file) in branch.commits_files.iter().enumerate() {
-        if commit_file.commit_hash == commit_to_verify {
-            index = i as i32;
+
+fn verify_if_commit_exist(commit_to_verify: &str, branch: &Branch) -> Result<bool, std::io::Error> {
+    for commit in branch.commits.iter() {
+        if commit.commit_hash == commit_to_verify {
+            return Ok(true);
         }
     }
-    if index>=0{Ok(index as usize)}
-    else {Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))}
+    Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))
 }
 
-fn verify_if_left_commits_use_the_diff(commit_hash_to_verify: &str, left: &[CommitFiles]) -> bool {
-    for commit_file in left {
-        for file_change_log in &commit_file.files_changelogs {
-            if file_change_log.hash_changelog == commit_hash_to_verify {
-                return true;
+
+fn delete_files_not_in_vector(folder_path: &str, files_to_retain: &[String]) -> Result<(), io::Error> {
+    let folder_entries = fs::read_dir(folder_path)?;
+
+    for entry in folder_entries {
+        let entry = entry?;
+        let file_name = entry.file_name();
+        let file_name_str = file_name.to_string_lossy().into_owned();
+
+        if !files_to_retain.contains(&file_name_str) {
+            let file_path = entry.path();
+            if file_path.is_file() {
+                fs::remove_file(file_path)?;
+                println!("Deleted file: {}", file_name_str);
             }
         }
     }
-    false
+
+    Ok(())
 }
+
+
 
 // Function to remove a file from the staging area
 pub fn delete(commit_to_remove: &str) -> Result<String, Box<dyn std::error::Error>> {
     let path = "my_vcs/";
-    let mut branch: structs::structs_mod::BranchChangesLog =
-        structs::StructWriter::read_struct_from_file(&format!("{}{}", path, "branch_changes_log.yml"))?;
+    let mut repository: structs::structs_mod::Repository =
+    structs::StructWriter::read_struct_from_file(&format!("{}{}", &path, "my_repo.yml"))?;
 
-    let index = verify_if_commit_exist(commit_to_remove, &branch);
+    // 1. Find the branch in the repository based on the given branch name
+
+    let branch = match repository.branches.iter_mut().find(|b| b.branch_name == repository.current_branch) {
+        Some(branch) => branch,
+        None => {
+            println!("Branch not found");
+            return Err(Box::new(io::Error::new(io::ErrorKind::NotFound, "Branch not found")));
+        }
+    };
+
+
     match verify_if_commit_exist(commit_to_remove, &branch) {
         Ok(index) => {
-            let commits_files = &branch.commits_files;
-
-            // Split the vector [hash_to_delete, last_hash] rest
-            let (left, right) = commits_files.split_at(index);
-        
+            let mut commit_tree = build_commit_tree(branch, commit_to_remove)?;
+            if let Some((last, elements)) = commit_tree.split_last() {commit_tree = elements.to_vec();} 
+            let mut saves_to_retain: Vec<String> = Vec::new();
             // Delete diff files
-            for commit_file in right {
-                for file_change_log in &commit_file.files_changelogs {
-                    if !verify_if_left_commits_use_the_diff(&file_change_log.hash_changelog, &left) {
-                        let file_to_delete = format!("{}{}", file_change_log.hash_files_path, file_change_log.hash_changelog);
-                        if let Err(err) = fs::remove_file(file_to_delete) {
-                            return Err(Box::new(err));
-                        }
-                    }
+            for commit in &commit_tree {
+                for file_change_log in &commit.files_changelogs {
+                    saves_to_retain.push(file_change_log.hash_changelog.clone());
                 }
             }
-        
-            branch.commits_files = left.to_vec();
-            structs::StructWriter::update_struct_file(&format!("{}{}", path, "branch_changes_log.yml"), &branch)?;
+            delete_files_not_in_vector(&format!("{}add_contents/", path), &saves_to_retain);
+            branch.commits = commit_tree.to_vec();
+            branch.head_commit_hash = commit_to_remove.to_string();
+            structs::StructWriter::update_struct_file(&format!("{}{}", path, "my_repo.yml"), &repository)?;
             log::start(format!("delete {}", &commit_to_remove));
             println!("Commit with hash {} deleted", &commit_to_remove);
             Ok(format!("Commit with hash {} deleted ", commit_to_remove))

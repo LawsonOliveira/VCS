@@ -21,30 +21,39 @@ pub mod structs_mod {
         pub current_path: String,
     }
 
-    #[derive(Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct FileChangeLog {
         pub original_file_path: String,
         pub original_file: String,
-        pub hash_changelog: String,
         pub last_file: String,
+        pub last_file_path: String,
+        pub hash_changelog: String,
         pub hash_files_path: String,
+        pub version: u64,  // Added: Version number for the file change
+        pub parent_versions: Vec<u64>,  // Added: List of parent version numbers
     }
 
-
-    #[derive(Clone, Serialize, Deserialize)]
-    pub struct CommitFiles {
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Commit {
         pub files_changelogs: Vec<FileChangeLog>,
         pub commit_hash: String,
+        pub parent_commits: Vec<String>,  // Added: List of parent commit hashes
     }
 
-    
-    #[derive(Serialize, Deserialize)]
-    pub struct BranchChangesLog {
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct Branch {
         pub branch_name: String,
-        pub commits_files: Vec<CommitFiles>,
+        pub head_commit_hash: String,  // Added: Hash of the latest commit in the branch
+        pub commits: Vec<Commit>,  // Added: List of commits in the branch
     }
 
+    #[derive(Serialize, Deserialize)]
+    pub struct Repository {
+        pub current_branch: String,
+        pub branches: Vec<Branch>,
+    }
 }
+
 
 pub struct StructWriter;
 impl StructWriter {
@@ -54,7 +63,7 @@ impl StructWriter {
     ///
     /// Returns an error if there is an issue writing the files.
     pub fn write_blank_structs_to_files(&self) -> Result<(), Box<dyn std::error::Error>> {
-        use structs_mod::{Log, Init, FileChangeLog, CommitFiles, BranchChangesLog};
+        use structs_mod::{Log, Init, Repository};
         let path = "./my_vcs/";
         let log = Log {
             action: Vec::new(),
@@ -67,20 +76,20 @@ impl StructWriter {
             current_path: String::new(),
         };
 
-        let branch_changes_log = BranchChangesLog {
-            branch_name: String::from("Default initialization") ,
-            commits_files: Vec::new(),
+        let my_repo = Repository {
+            current_branch: String::from("main"),
+            branches: Vec::new(), 
         };
     
         // Serialize the structs into YAML format
         let log_yaml = serde_yaml::to_string(&log)?;
         let init_yaml = serde_yaml::to_string(&init)?;
-        let branch_changes_log_yaml = serde_yaml::to_string(&branch_changes_log)?;
+        let my_repo = serde_yaml::to_string(&my_repo)?;
     
         // Write the YAML strings to files
         fs::write(format!("{}{}", path, "log.yml"), &log_yaml)?;
         fs::write(format!("{}{}", path, "init.yml"), &init_yaml)?;
-        fs::write(format!("{}{}", path, "branch_changes_log.yml"), &branch_changes_log_yaml)?;
+        fs::write(format!("{}{}", path, "my_repo.yml"), &my_repo)?;
 
         Ok(())
     }
