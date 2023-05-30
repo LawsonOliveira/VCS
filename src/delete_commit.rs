@@ -39,12 +39,11 @@ fn delete_files_not_in_vector(folder_path: &str, files_to_retain: &[String]) -> 
 }
 
 
-
 // Function to remove a file from the staging area
 pub fn delete(commit_to_remove: &str) -> Result<String, Box<dyn std::error::Error>> {
     let path = "my_vcs/";
     let mut repository: structs::structs_mod::Repository =
-    structs::StructWriter::read_struct_from_file(&format!("{}{}", &path, "my_repo.yml"))?;
+        structs::StructWriter::read_struct_from_file(&format!("{}{}", &path, "my_repo.yml"))?;
 
     // 1. Find the branch in the repository based on the given branch name
 
@@ -56,32 +55,35 @@ pub fn delete(commit_to_remove: &str) -> Result<String, Box<dyn std::error::Erro
         }
     };
 
-
     match verify_if_commit_exist(commit_to_remove, &branch) {
         Ok(index) => {
             let mut commit_tree = build_commit_tree(branch, commit_to_remove)?;
-            if let Some((last, elements)) = commit_tree.split_last() {commit_tree = elements.to_vec();} 
+            if let Some((last, elements)) = commit_tree.split_last() {
+                commit_tree = elements.to_vec();
+            }
             let mut saves_to_retain: Vec<String> = Vec::new();
-            // Delete diff files
+            
+            // Collect saves to retain
             for commit in &commit_tree {
                 for file_change_log in &commit.files_changelogs {
                     saves_to_retain.push(file_change_log.hash_changelog.clone());
                 }
             }
-            delete_files_not_in_vector(&format!("{}add_contents/", path), &saves_to_retain);
+
+            // Delete diff files not in saves_to_retain
+            delete_files_not_in_vector(&format!("{}saves/", path), &saves_to_retain)?;
+
             branch.commits = commit_tree.to_vec();
             branch.head_commit_hash = commit_to_remove.to_string();
             structs::StructWriter::update_struct_file(&format!("{}{}", path, "my_repo.yml"), &repository)?;
             log::start(format!("delete {}", &commit_to_remove));
             println!("Commit with hash {} deleted", &commit_to_remove);
             Ok(format!("Commit with hash {} deleted ", commit_to_remove))
-
-            
         }
         Err(err) => {
             // Handle the error case where the commit doesn't exist
             println!("Error: {}", err);
-            Err(Box::new(err))        }
+            Err(Box::new(err))
+        }
     }
-
 }

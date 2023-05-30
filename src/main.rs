@@ -10,7 +10,6 @@ mod structs;
 mod log;
 mod delete_commit;
 
-
 fn main() {
     // Check if the user provided more than 1 argument
     {
@@ -62,7 +61,7 @@ fn main() {
             if args.len() != 3 {
                 println!("You need to provide a comment for the commit.");
             } else {
-                commit::commit(&args[2]);
+                commit::create_commit(&args[2]);
             }
         },
         "delete" => {
