@@ -47,8 +47,8 @@ pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     
     // 4. Set the parent commits for the new commit
-    if let Some(parent_commit_hash) = branch.commits.last().map(|c| c.commit_hash.clone()) {
-        commit.parent_commits.push(parent_commit_hash);
+    if &branch.head_commit_hash != "" {
+        commit.parent_commits.push(branch.head_commit_hash.clone());
     }
     else{
         commit.parent_commits.push(commit_hash.clone());
@@ -164,9 +164,9 @@ fn create_file_change_log(filename: String, path: String, filehash: String, bran
     let file_parent_version_tree: Vec<FileChangeLog> = build_file_parent_version_tree(&files_changelogs_tree)?;
 
     let last_file = filename.clone();
-    let last_file_path = filepath.clone();
+    let last_file_path = "./".to_string();
     let hash_changelog = filehash.clone();
-    let version = file_parent_version_tree.len();
+    let version = branch.commits.len();
     let parent_versions = vec![file_parent_version_tree.last().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File parent version tree is empty"))?.version];
 
 
@@ -187,7 +187,7 @@ fn create_file_change_log(filename: String, path: String, filehash: String, bran
         let diff_path = format!("{}{}",file_changelog_version.hash_files_path,file_changelog_version.hash_changelog);
         let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
         let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
-        let previous_version = apply(&previous_version.to_owned(), &patch).unwrap();
+        previous_version = apply(&previous_version.to_owned(), &patch).unwrap();
     }
 
 
@@ -230,7 +230,7 @@ pub fn build_commit_tree(branch: &Branch, head_commit_hash: &str) -> Result<Vec<
 
 
 
-fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -> Result<Vec<FileChangeLog>, io::Error> {
+pub fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -> Result<Vec<FileChangeLog>, io::Error> {
     let mut file_change_log_tree: Vec<FileChangeLog> = Vec::new();
     let mut previous_name = original_file.to_string();
 
@@ -247,7 +247,7 @@ fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -> Re
     Ok(file_change_log_tree)
 }
 
-fn build_file_parent_version_tree(file_change_log_tree: &[FileChangeLog]) -> Result<Vec<FileChangeLog>, io::Error> {
+pub fn build_file_parent_version_tree(file_change_log_tree: &[FileChangeLog]) -> Result<Vec<FileChangeLog>, io::Error> {
     let mut file_parent_version_tree: Vec<FileChangeLog> = file_change_log_tree.to_vec();
     file_parent_version_tree.reverse();
 
@@ -282,6 +282,7 @@ fn build_file_parent_version_tree(file_change_log_tree: &[FileChangeLog]) -> Res
     file_parent_version_tree.reverse();
     Ok(file_parent_version_tree)
 }
+
 
 
 fn read_file_lines(path: &str) -> Result<Vec<String>, io::Error> {
