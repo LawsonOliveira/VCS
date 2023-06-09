@@ -1,32 +1,43 @@
-use std::fs;
-use serde::{Deserialize, Serialize};
-use serde_yaml::{self};
-use std::io;
-use crate::structs::structs_mod::{FileChangeLog, Branch};
+use std::{fs, io};
+use std::error::Error;
+
+use crate::structs::structs_mod::{FileChangeLog, Branch, Commit};
 use crate::structs;
 use crate::log;
 use crate::commit::{build_commit_tree};
 
 
-fn verify_if_commit_exist(commit_to_verify: &str, branch: &Branch) -> Result<bool, std::io::Error> {
+/// Verifies if a commit exists in a branch.
+/// Returns `Ok(true)` if the commit exists, otherwise returns an `Err` with an `io::ErrorKind::NotFound`.
+pub fn verify_if_commit_exist(commit_to_verify: &str, branch: &Branch) -> Result<bool, io::Error> {
     for commit in branch.commits.iter() {
         if commit.commit_hash == commit_to_verify {
             return Ok(true);
         }
     }
-    Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Commit doesn't exist"))
+    Err(io::Error::new(io::ErrorKind::NotFound, "Commit doesn't exist"))
 }
 
-
-fn delete_files_not_in_vector(folder_path: &str, files_to_retain: &[String]) -> Result<(), io::Error> {
+/// Deletes files from a folder based on the commits to delete.
+/// Returns `Ok(())` if the files are deleted successfully, otherwise returns an `Err` with the corresponding error.
+fn delete_diff_files(folder_path: &str, commits_to_delete: &[Commit]) -> Result<(), Box<dyn Error>> {
     let folder_entries = fs::read_dir(folder_path)?;
+    let files_changelogs_to_delete: Vec<FileChangeLog> = commits_to_delete
+        .iter()
+        .flat_map(|commit| commit.files_changelogs.clone())
+        .collect();
+
+    let filenames_to_delete: Vec<String> = files_changelogs_to_delete
+        .iter()
+        .map(|hash_changelog| hash_changelog.hash_changelog.clone())
+        .collect();
 
     for entry in folder_entries {
         let entry = entry?;
         let file_name = entry.file_name();
         let file_name_str = file_name.to_string_lossy().into_owned();
 
-        if !files_to_retain.contains(&file_name_str) {
+        if filenames_to_delete.contains(&file_name_str) {
             let file_path = entry.path();
             if file_path.is_file() {
                 fs::remove_file(file_path)?;
@@ -38,15 +49,54 @@ fn delete_files_not_in_vector(folder_path: &str, files_to_retain: &[String]) -> 
     Ok(())
 }
 
+/// Deletes the child commits from a branch.
+/// Returns `Ok(())` if the commits are deleted successfully, otherwise returns an `Err` with an `io::ErrorKind::NotFound`.
+fn delete_child_commits(branch: &mut Branch, commits_to_delete: &[Commit]) -> Result<(), io::Error> {
+    let final_commits_count = branch.commits.len() - commits_to_delete.len();
+    branch.commits.retain(|commit| !commits_to_delete
+        .iter()
+        .any(|delete_commit| delete_commit.commit_hash == commit.commit_hash));
 
-// Function to remove a file from the staging area
-pub fn delete(commit_to_remove: &str) -> Result<String, Box<dyn std::error::Error>> {
+    if branch.commits.len() != final_commits_count {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "Not at least one matching commit was found"));
+    }
+
+    Ok(())
+}
+
+/// Generates a list of commits to delete based on a given commit hash to delete.
+/// Returns `Ok(Vec<Commit>)` with the list of commits to delete, or an `Err` with an `io::ErrorKind::NotFound` if no matching commits are found.
+fn gen_commits_to_delete(branch: &Branch, commit_hash_to_delete: &str) -> Result<Vec<Commit>, io::Error> {
+    let mut commit_hash_parent: Vec<String> = vec![commit_hash_to_delete.to_string()];
+    let mut commits_to_delete: Vec<Commit> = Vec::new();
+
+    commits_to_delete.extend(branch.commits.iter()
+        .filter(|commit| commit.commit_hash == commit_hash_to_delete.to_string())
+        .cloned()
+    );
+
+    for commit in &branch.commits {
+        if commit.parent_commits.iter().any(|parent| commit_hash_parent.contains(parent)) {
+            commit_hash_parent = commit.parent_commits.clone();
+            commits_to_delete.push(commit.clone());
+        }
+    }
+
+    if commits_to_delete.is_empty() {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "No matching commits found"));
+    }
+
+    Ok(commits_to_delete)
+}
+
+/// Deletes a commit from the repository.
+/// Returns `Ok(())` if the commit is deleted successfully, otherwise returns an `Err` with the corresponding error.
+pub fn delete(commit_to_remove: &str) -> Result<(), Box<dyn Error>> {
     let path = "my_vcs/";
     let mut repository: structs::structs_mod::Repository =
         structs::StructWriter::read_struct_from_file(&format!("{}{}", &path, "my_repo.yml"))?;
 
     // 1. Find the branch in the repository based on the given branch name
-
     let branch = match repository.branches.iter_mut().find(|b| b.branch_name == repository.current_branch) {
         Some(branch) => branch,
         None => {
@@ -55,35 +105,27 @@ pub fn delete(commit_to_remove: &str) -> Result<String, Box<dyn std::error::Erro
         }
     };
 
-    match verify_if_commit_exist(commit_to_remove, &branch) {
-        Ok(index) => {
-            let mut commit_tree = build_commit_tree(branch, commit_to_remove)?;
-            if let Some((last, elements)) = commit_tree.split_last() {
-                commit_tree = elements.to_vec();
-            }
-            let mut saves_to_retain: Vec<String> = Vec::new();
-            
-            // Collect saves to retain
-            for commit in &commit_tree {
-                for file_change_log in &commit.files_changelogs {
-                    saves_to_retain.push(file_change_log.hash_changelog.clone());
-                }
-            }
-
-            // Delete diff files not in saves_to_retain
-            delete_files_not_in_vector(&format!("{}saves/", path), &saves_to_retain)?;
-
-            branch.commits = commit_tree.to_vec();
-            branch.head_commit_hash = commit_to_remove.to_string();
-            structs::StructWriter::update_struct_file(&format!("{}{}", path, "my_repo.yml"), &repository)?;
-            log::start(format!("delete {}", &commit_to_remove));
-            println!("Commit with hash {} deleted", &commit_to_remove);
-            Ok(format!("Commit with hash {} deleted ", commit_to_remove))
-        }
-        Err(err) => {
-            // Handle the error case where the commit doesn't exist
-            println!("Error: {}", err);
-            Err(Box::new(err))
-        }
+    // 2. Verify if the commit to remove exists in the branch
+    if !verify_if_commit_exist(commit_to_remove, &branch)? {
+        return Err(Box::new(io::Error::new(io::ErrorKind::NotFound, "Commit not found")));
     }
+
+    // 3. Generate the list of commits to delete
+    let commits_to_delete: Vec<Commit> = gen_commits_to_delete(&branch, &commit_to_remove)?;
+
+    let new_head_commit_hash: String = commits_to_delete[0].parent_commits[0].clone();
+
+    // 4. Delete diff files not in saves_to_retain
+    delete_diff_files(&format!("{}saves/", path), &commits_to_delete)?;
+
+    // 5. Delete the commits from the branch
+    delete_child_commits(branch, &commits_to_delete)?;
+
+    // 6. Update the repository and log the deletion
+    branch.head_commit_hash = new_head_commit_hash;
+    structs::StructWriter::update_struct_file(&format!("{}{}", path, "my_repo.yml"), &repository)?;
+
+    println!("Commit with hash {} deleted", &commit_to_remove);
+    log::start(format!("delete_commit {}", &commit_to_remove));
+    Ok(())
 }

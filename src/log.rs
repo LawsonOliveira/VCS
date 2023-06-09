@@ -1,20 +1,9 @@
-/// Provides functions for logging actions in the VCS.
-use std::fs;
-use std::io::Write;
-use serde_yaml;
-
 use crate::structs;
 use crate::time;
 
+
 /// Starts logging the specified action.
-///
-/// # Arguments
-///
-/// * `action` - The action to log.
-///
-/// # Errors
-///
-/// Returns an error if there is an issue reading or updating the log file.
+/// Returns `Ok(())` if the log was created/updated successfully, otherwise returns an `Err` with the corresponding error.
 pub fn start(action: String) -> Result<(), Box<dyn std::error::Error>> {
     let time_date: [String; 2] = time::start();
 

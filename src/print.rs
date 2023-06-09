@@ -1,44 +1,30 @@
-// PACKAGES
 use serde_yaml;
+
 use crate::structs::structs_mod::{Log, Init};
+use crate::structs::StructWriter;
+
 
 /// Prints available commands.
 pub fn print_commands() {
-    println!("Commands:\n");
-    println!("my_vcs init\n  command to initialize the project\n");
-    println!("my_vcs add src/main.js save_name\n  command to save the file.\n");
-    println!("my_vcs delete save_name\n  command to delete the save.\n");
-    println!("my_vcs select save_name\n  command to insert saved content into a file.\n");
-    println!("my_vcs commit \"comment to be save\"\n  command to commit the save\n");
-    println!("my_vcs CreateBranch NameBranchToCreate \n  command to create a new branch\n");
-    println!("my_vcs ChangeBranch NameBranchToChange\n  command to change the current branch to another\n");
-    println!("my_vcs ChangeVersion NameVersionToChange\n  command to browse between the version of the code\n");
-    println!("my_vcs print\n  command to display all saves and info about project.\n");
-    println!("my_vcs info\n  command to view information about the initialized project.\n");
-    println!("my_vcs cmd\n  command to display all commands.\n");
-    println!("my_vcs log\n  command to view logs.\n");
+    println!("Available commands:");
+    println!("init: Initialize the version control system");
+    println!("add <file>: Add a file to version control");
+    println!("remove <file>: Remove a file from version control");
+    println!("commit <comment>: Create a commit with a comment");
+    println!("delete <file>: Delete a file from version control");
+    println!("change_version <version>: Change the version of a file");
+    println!("create_branch <branch>: Create a new branch");
+    println!("change_branch <branch>: Change to a different branch");
+    println!("delete_branch <branch>: Delete a branch");
+    println!("log: Print the commit log");
+    println!("init: Print the initialization details");
+    println!("print_commands: Print available commands");
 }
 
-/// Shows the log entries.
-///
-/// # Errors
-///
-/// Returns an error if there is an issue opening or reading the log file.
-fn show_log() -> Result<(), Box<dyn std::error::Error>> {
-    let f = std::fs::File::open("config.yml")?;
-    let log: Log = serde_yaml::from_reader(f)?;
-
-    for i in 0..log.action.len() {
-        println!("{}", log.created_date[i]);
-        println!("{}", log.action[i]);
-        println!("{}", log.created_time[i]);
-    }
-
-    Ok(())
-}
 
 
 /// Prints project initialization information.
+/// Returns `Ok(())` if the informations was displayed successfully, otherwise returns an `Err` with the corresponding error.
 pub fn print_init() {
     fn get_data() -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let f = std::fs::File::open("init.yml")?;
@@ -66,33 +52,16 @@ pub fn print_init() {
         info[0], info[1], info[2]
     );
 }
+
 /// Prints the log entries.
-///
-/// # Errors
-///
-/// Returns an error if there is an issue showing the log.
+/// Returns `Ok(())` if the log was displayed successfully, otherwise returns an `Err` with the corresponding error.
 pub fn print_log() -> Result<(), Box<dyn std::error::Error>> {
-    show_log()?;
+    let log: Log= StructWriter::read_struct_from_file("my_vcs/log.yml").unwrap();
+
+    for i in 0..log.action.len() {
+        println!("Action: {} - Date: {} - Created time: {}",log.action[i],log.created_date[i],log.created_time[i]);
+    }
+
     Ok(())
 }
-
-/// Prints all information including project initialization and log entries.
-pub fn print_all() {
-    print_init();
-    // print_db();
-}
-
-// fn print_db() {
-//     let saves_base = crate::database::get::start().unwrap();
-//     let mut id: i64 = 1;
-
-//     for x in saves_base.into_iter() {
-//         println!(
-//             "{}. {}\n   - path\n      {}\n   - saved\n      {}\n      {}\n",
-//             id, x[1], x[0], x[2], x[3]
-//         );
-
-//         id += 1;
-//     }
-// }
 

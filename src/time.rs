@@ -1,5 +1,6 @@
 use chrono::{Local, DateTime};
 
+
 /// Get the current date in the format "%d/%m/%y".
 fn get_date(local: DateTime<Local>) -> String {
     local.format("%d/%m/%y").to_string()

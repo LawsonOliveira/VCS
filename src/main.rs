@@ -1,16 +1,19 @@
 #![allow(warnings)]
 
-mod init;
-mod print;
-mod time;
-mod commit;
 mod add;
+mod change_branch;
+mod change_version;
+mod commit;
+mod create_branch;
+mod delete_branch;
+mod delete_commit;
+mod init;
+mod log;
+mod print;
 mod remove;
 mod structs;
-mod log;
-mod delete_commit;
-mod change_version;
-mod branches;
+mod time;
+
 
 fn main() {
     // Check if the user provided more than 1 argument
@@ -35,13 +38,7 @@ fn main() {
                 println!("You need to provide at least one file to add.");
             } else {
                 for arg in std::env::args().skip(2) {
-                    let file_exists = std::path::Path::new(&arg).exists();
-
-                    if file_exists {
-                        add::add_to_version_control(&arg);
-                    } else {
-                        println!("File does not exist: {}", arg);
-                    }
+                    add::add_to_version_control(&arg);
                 }
             }
         }
@@ -61,79 +58,68 @@ fn main() {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
-                println!("You need to provide a comment for the commit.");
+                println!("You need to provide a comment");
             } else {
                 commit::create_commit(&args[2]);
             }
         },
-        "delete" => {
+        "delete_commit" => {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
-                println!("You need to provide a comment for the commit.");
+                println!("You need to provide the file to delete");
             } else {
                 delete_commit::delete(&args[2]);
             }
         },
-        "checkout" => {
+        "change_version" => {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
-                println!("You need to provide a comment for the commit.");
+                println!("You need to provide the version to change.");
             } else {
-                change_version::checkout(&args[2]);
+                change_version::change_version(&args[2]);
             }
         },
         "create_branch" => {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
-                println!("You need to provide a comment for the commit.");
+                println!("You need to provide the branch to create.");
             } else {
-                branches::create_branch(&args[2]);
+                create_branch::create_branch(&args[2]);
             }
         },
         "change_branch" => {
             let args: Vec<_> = std::env::args().collect();
 
             if args.len() != 3 {
-                println!("You need to provide a comment for the commit.");
+                println!("You need to provide the branch to change.");
             } else {
-                branches::change_branch(&args[2]);
+                change_branch::change_branch(&args[2]);
             }
         },
-		//"print" => print::start(0),
-		//"log" => print::start(1),
-		&_ => todo!(),
-		//	let scd_arg = std::env::args().nth(2).expect("save to delete wasn't given");
-		//	delete_fn::start(scd_arg);
-		//},
-		//"select" => {
-		//	let scd_arg = std::env::args().nth(2).expect("save to select wasn't given");
-		//	select_fn::start(scd_arg);
-		//},
-		//"commit" => {
-		//	let scd_arg = std::env::args().nth(2).expect("commit wasn't given");
-			//select_fn::start(scd_arg);
-		//},
-		//"CreateBranch" => {			
-		//	let scd_arg = std::env::args().nth(2).expect("branch to create wasn't given");
-			//select_fn::start(scd_arg);
-		//},
-		//"ChangeBranch" => {			
-		//	let scd_arg = std::env::args().nth(2).expect("branch to change wasn't given");
-			//select_fn::start(scd_arg);
-		//},
-		//"ChangeVersion" => {	
-		//	let scd_arg = std::env::args().nth(2).expect("version to change wasn't given");
-			//select_fn::start(scd_arg);
-		//},
-		//"info" => print::read_yaml(),
-		//"cmd" => print::print_commands(),
-		//"exit" => return,
-		//_ => {
-			//println!("Command Unknown!");
-			//return;
-		//},
-	}
+        "delete_branch" => {
+            let args: Vec<_> = std::env::args().collect();
+
+            if args.len() != 3 {
+                println!("You need to provide the branch to delete.");
+            } else {
+                delete_branch::delete_branch(&args[2]);
+            }
+        },
+        "log" => {
+            print::print_log();
+        },
+        "init" => {
+            print::print_init();
+        },
+        "print_commands" => {
+            print::print_commands();
+        },
+        _ => {
+            println!("Command Unknown!");
+            return;
+        },
+    }
 }

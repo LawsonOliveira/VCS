@@ -1,9 +1,10 @@
-use std::fs;
-use std::io;
+use std::{fs, io};
+
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 
 
+/// Contains the structures used for serialization and deserialization.
 pub mod structs_mod {
     use serde::{Serialize, Deserialize};
 
@@ -29,22 +30,22 @@ pub mod structs_mod {
         pub last_file_path: String,
         pub hash_changelog: String,
         pub hash_files_path: String,
-        pub version: u64,  // Added: Version number for the file change
-        pub parent_versions: Vec<u64>,  // Added: List of parent version numbers
+        pub version: u32,
+        pub parent_version: u32,
     }
 
     #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct Commit {
         pub files_changelogs: Vec<FileChangeLog>,
         pub commit_hash: String,
-        pub parent_commits: Vec<String>,  // Added: List of parent commit hashes
+        pub parent_commits: Vec<String>,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct Branch {
         pub branch_name: String,
-        pub head_commit_hash: String,  // Added: Hash of the latest commit in the branch
-        pub commits: Vec<Commit>,  // Added: List of commits in the branch
+        pub head_commit_hash: String,
+        pub commits: Vec<Commit>,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -54,80 +55,58 @@ pub mod structs_mod {
     }
 }
 
-
+/// Provides utility functions for reading and writing YAML serialized structures.
 pub struct StructWriter;
+
 impl StructWriter {
-    /// Writes blank structs to YAML files.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there is an issue writing the files.
+    /// Writes blank structures to files in YAML format.
     pub fn write_blank_structs_to_files(&self) -> Result<(), Box<dyn std::error::Error>> {
-        use structs_mod::{Log, Init, Branch, Repository};
+        use structs_mod::{Log, Init, Repository};
+
         let path = "./my_vcs/";
+
         let log = Log {
             action: Vec::new(),
             created_date: Vec::new(),
             created_time: Vec::new(),
         };
+
         let init = Init {
             created_date: String::new(),
             created_time: String::new(),
             current_path: String::new(),
         };
-        let main_branch = Branch {
-            branch_name: String::from("main"),
-            head_commit_hash: String::new(),  // Added: Hash of the latest commit in the branch
-            commits: Vec::new()  // Added: List of commits in the branch
-        };
-        
+
         let my_repo = Repository {
             current_branch: String::from("main"),
-            branches: vec![main_branch.clone()],
+            branches: Vec::new(),
         };
-    
+
         // Serialize the structs into YAML format
         let log_yaml = serde_yaml::to_string(&log)?;
         let init_yaml = serde_yaml::to_string(&init)?;
-        let my_repo = serde_yaml::to_string(&my_repo)?;
-    
+        let my_repo_yaml = serde_yaml::to_string(&my_repo)?;
+
         // Write the YAML strings to files
         fs::write(format!("{}{}", path, "log.yml"), &log_yaml)?;
         fs::write(format!("{}{}", path, "init.yml"), &init_yaml)?;
-        fs::write(format!("{}{}", path, "my_repo.yml"), &my_repo)?;
+        fs::write(format!("{}{}", path, "my_repo.yml"), &my_repo_yaml)?;
 
         Ok(())
     }
 
-    /// Reads a struct from a YAML file.
-    ///
-    /// # Arguments
-    ///
-    /// * `file_path` - The path of the file to read.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there is an issue reading the file or deserializing the data.
+    /// Reads a structure from a YAML file.
     pub fn read_struct_from_file<T>(file_path: &str) -> Result<T, Box<dyn std::error::Error>>
     where
         T: for<'de> Deserialize<'de>,
-    {   
+    {
         let file_contents = fs::read_to_string(file_path)?;
         let struct_data: T = serde_yaml::from_str(&file_contents)?;
 
         Ok(struct_data)
     }
 
-    /// Updates a struct file with new data.
-    ///
-    /// # Arguments
-    ///
-    /// * `file_path` - The path of the file to update.
-    /// * `struct_data` - The data to update the file with.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there is an issue writing the file or serializing the data.
+    /// Updates a YAML file with the serialized structure.
     pub fn update_struct_file<T>(file_path: &str, struct_data: &T) -> Result<(), Box<dyn std::error::Error>>
     where
         T: Serialize,

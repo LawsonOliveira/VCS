@@ -1,12 +1,12 @@
 /// Provides functions for initializing the VCS.
-use std::env;
-use std::fs;
-use std::io;
+use std::{env, fs, io};
 
 use crate::structs;
 use crate::time;
 
+
 /// Starts the VCS initialization process.
+/// Returns `Ok(())` if the files are deleted successfully, otherwise returns an `Err` with the corresponding error.
 pub fn start_vcs() {
     match fs::create_dir("my_vcs") {
         Err(why) => {
@@ -14,8 +14,6 @@ pub fn start_vcs() {
             crate::log::start("INIT -> ERROR".to_string());
         }
         Ok(_) => {
-            //fs::File::create("my_vcs/log.yml");
-            //fs::File::create("my_vcs/init.yml");
             fs::create_dir("my_vcs/saves");
 
             if let Err(err) = structs::StructWriter::write_blank_structs_to_files(&structs::StructWriter) {

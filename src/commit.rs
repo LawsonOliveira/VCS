@@ -1,15 +1,13 @@
+/// FIX THE BUG
 use std::fs;
-use std::io;
 use std::path::Path;
-
-use std::io::{BufRead, BufReader, Read};
+use std::io::{self, BufRead, BufReader, Read};
 use std::collections::HashMap;
-
 use diffy::{apply, Patch, PatchFormatter};
 use sha2::{Digest, Sha256};
-
 use serde_yaml;
 use hex;
+
 use crate::log;
 use crate::structs;
 use crate::remove;
@@ -18,7 +16,6 @@ use crate::structs::structs_mod::{Repository, Branch, Commit, FileChangeLog};
 
 
 
-//// Falta trabalhar o caso inicial
 pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = "my_vcs/";
 
@@ -60,7 +57,7 @@ pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     for (filename, filehash) in changes_to_commit {
         let first_version_file_changelog = true;
         if !has_file_change_log_with_original_file(branch, &filename) {
-            let new_file_change_log = create_file_change_log_to_first_commit(filename, path.to_string(), filehash)?;
+            let new_file_change_log = create_file_change_log_to_first_commit(&filename, &path.to_string(), &filehash)?;
             commit.files_changelogs.push(new_file_change_log);
         }
         else{
@@ -78,6 +75,8 @@ pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // 8. Update the head commit hash of the branch to the hash of the newly created commit
     branch.head_commit_hash = commit_hash.clone();
+
+    log::start(format!("commit \n message: {} \n commit hash: {}", &message,&commit_hash));
 
     structs::StructWriter::update_struct_file(&format!("{}{}", path, "my_repo.yml"), &repository)?;
     // 9. Return the commit hash
@@ -127,7 +126,7 @@ fn prepare_changes_to_commit(path: String) -> Result<HashMap<String, String>, st
 
 
 
-fn create_file_change_log_to_first_commit(filename_to_commit: String, path: String, filehash_to_commit: String)  -> Result<FileChangeLog, std::io::Error> {
+fn create_file_change_log_to_first_commit(filename_to_commit: &String, path: &String, filehash_to_commit: &String)  -> Result<FileChangeLog, std::io::Error> {
 
     let new_file_change_log = FileChangeLog {
         original_file_path: String::from("./"),
@@ -137,12 +136,12 @@ fn create_file_change_log_to_first_commit(filename_to_commit: String, path: Stri
         hash_changelog: filehash_to_commit.clone(),
         hash_files_path: format!("{}{}", &path, "saves/"),
         version: 0,
-        parent_versions: vec![0; 1],
+        parent_version: 0,
     };
 
 
     let filename_save_path = format!("{}{}", new_file_change_log.hash_files_path, new_file_change_log.hash_changelog);
-    let content_to_commit = fs::read_to_string(format!("{}add_contents/{}.yml", path, filename_to_commit))?;
+    let content_to_commit = fs::read_to_string(format!("{}add_contents/{}.yml", &path, filename_to_commit))?;
 
     let file = fs::File::create(filename_save_path)?;
     let patch = diffy::create_patch("", &content_to_commit);
@@ -165,23 +164,25 @@ fn create_file_change_log(filename: String, path: String, filehash: String, bran
 
     let last_file = filename.clone();
     let last_file_path = "./".to_string();
-    let hash_changelog = filehash.clone();
-    let version = branch.commits.len();
-    let parent_versions = vec![file_parent_version_tree.last().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File parent version tree is empty"))?.version];
+    let hash_changelog = filehash;
+    let version: u32 = branch.commits.len() as u32;
+
+    let parent = file_parent_version_tree.last().unwrap();
 
 
     let new_file_change_log = FileChangeLog {
-        original_file_path: file_parent_version_tree.last().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File parent version tree is empty"))?.original_file_path.clone(),
-        original_file: file_parent_version_tree.last().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File parent version tree is empty"))?.original_file.clone(),
+        original_file_path: parent.original_file_path.clone(),
+        original_file: parent.original_file.clone(),
         last_file,
         last_file_path,
         hash_changelog,
-        hash_files_path: file_parent_version_tree.last().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File parent version tree is empty"))?.hash_files_path.clone(),
-        version: version.try_into().unwrap(),
-        parent_versions,
+        hash_files_path: parent.hash_files_path.clone(),
+        version: version,
+        parent_version: parent.parent_version,
     };
 
     let mut previous_version: String = String::new();
+
     for file_changelog_version in file_parent_version_tree{
 
         let diff_path = format!("{}{}",file_changelog_version.hash_files_path,file_changelog_version.hash_changelog);
@@ -239,7 +240,7 @@ pub fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -
         for file_change_log in commit.files_changelogs.iter() {
             if file_change_log.original_file == previous_name {
                 previous_name = file_change_log.last_file.clone();
-                file_change_log_tree.push(file_change_log.clone());
+                file_change_log_tree.push(file_change_log.to_owned());
             }
         }
     }
@@ -251,29 +252,25 @@ pub fn build_file_parent_version_tree(file_change_log_tree: &[FileChangeLog]) ->
     let mut file_parent_version_tree: Vec<FileChangeLog> = file_change_log_tree.to_vec();
     file_parent_version_tree.reverse();
 
-    let initial_version = file_change_log_tree
-        .last()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File change log tree is empty"))?
-        .version;
+    let initial_version = file_change_log_tree.last().unwrap().version;
 
     let mut current_version = initial_version;
 
-    while let Some(parent_version) = file_change_log_tree
+    while let Some(file_changelog) = file_change_log_tree
         .iter()
         .find(|file_change_log| file_change_log.version == current_version)
-        .and_then(|file_change_log| file_change_log.parent_versions.first())
-        .cloned()
+        
     {
-        if parent_version == 0 {
+        if file_changelog.parent_version == 0 {
             break;
         }
 
         if let Some(parent_file_change_log) = file_change_log_tree
             .iter()
-            .find(|file_change_log| file_change_log.version == parent_version)
+            .find(|file_change_log| file_change_log.version == file_changelog.parent_version)
         {
             file_parent_version_tree.push(parent_file_change_log.clone());
-            current_version = parent_version;
+            current_version = file_changelog.parent_version;
         } else {
             return Err(io::Error::new(io::ErrorKind::NotFound, "Parent file change log not found"));
         }

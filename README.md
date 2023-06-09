@@ -1,34 +1,99 @@
-# vcs
+# Version Control System (VCS) CLI
 
-## How to use this work
+This is a command-line interface (CLI) for a Version Control System (VCS). It provides various functionalities for managing and tracking changes to files in a repository. The following sections describe the available commands and their usage.
+
+## Contributors
+
+This project is contributed to by the following individuals:
+
+- Lawson Oliveira Lima
+- Lucas Vitoriano de Queiroz Lira
 
 
-## Clone
-```
-git clone https://github.com/LawsonOliveira/VCS
-```
+## Getting Started
 
-## Compiling
-```
-cargo build --release
-cd target
-```
+To use the program, you need to provide arguments when running the CLI. Make sure you have Rust installed and follow these steps:
 
-## Usage
+1. Clone the repository: `git clone https://github.com/LawsonOliveira/VCS.git`
+2. Navigate to the project directory: `cd VCS`
+3. Build the project: `cargo build`
+4. Run the program: `cd ./target/debug && ./main <command>`
 
-Don't forget to add to the PATH (environment) to use rustix-vcs from any folder
+## Available Commands
 
-## Commands
-- ```vcs init``` - command to initialize the project
-- ```vcs add src/main.js save_name``` - command to save the file.
-- ```vcs delete save_name``` - command to delete the save.
-- ```vcs select save_name``` - command to insert saved content into a file.
-- ```vcs print``` - command to display all saves and info about project.
-- ```vcs info``` - command to view information about the initialized project.
-- ```vcs cmd``` - command to display all commands.
-- ```vcs log``` - command to view logs.
-- ```vcs commit``` - command to commit
-- ```vcs CreateBranch``` - command to create a new branch.
-- ```vcs ChangeBranch``` - command to change to another branch.
-- ```vcs ChangeVersion``` - command to change to another version.
+### init
+
+Initializes a new VCS repository.
+
+Usage: `cd ./target/debug && ./main init`
+
+### add
+
+Adds one or more files to the VCS for version control.
+
+Usage: `cd ./target/debug && ./main add <file1> <file2> ...`
+
+### remove
+
+Removes one or more files from the staging area and delete the respectives files in add/contents.
+
+Usage: `cd ./target/debug && ./main remove <file1> <file2> ...`
+
+### commit
+
+Creates a new commit with the specified comment.
+
+Usage: `cd ./target/debug && ./main commit <comment>`
+
+### delete_commit
+
+Deletes a specific commit from the VCS history using the hash.
+
+Usage: `cd ./target/debug && ./main delete_commit <commit_hash>`
+
+### checkout
+
+Changes the current version of the project to the specified commit hash.
+
+Usage: `cd ./target/debug && ./main change_version <commit_hash>`
+
+### create_branch
+
+Creates a new branch in the VCS repository.
+
+Usage: `cd ./target/debug && ./main create_branch <branch_name>`
+
+### change_branch
+
+Changes the current branch in the VCS repository.
+
+Usage: `cd ./target/debug && ./main change_branch <branch_name>`
+
+### delete_branch
+
+Deletes a branch from the VCS repository.
+
+Usage: `cd ./target/debug && ./main delete_branch <branch_name>`
+
+### print
+
+Prints the current state of the project files.
+
+Usage: `cd ./target/debug && ./main print`
+
+### log
+
+Displays the commit history and associated information.
+
+Usage: `cd ./target/debug && ./main log`
+
+
+---
+
+
+
+
+
+
+
 
