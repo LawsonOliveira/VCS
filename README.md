@@ -51,7 +51,7 @@ Deletes a specific commit from the VCS history using the hash.
 
 Usage: `cd ./target/debug && ./main delete_commit <commit_hash>`
 
-### checkout
+### change_version
 
 Changes the current version of the project to the specified commit hash.
 
