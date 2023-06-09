@@ -5,7 +5,7 @@ use diffy::{apply, Patch, PatchFormatter};
 use crate::structs::structs_mod::{FileChangeLog, Branch, Commit};
 use crate::structs;
 use crate::log;
-use crate::commit::{build_commit_tree, build_file_change_log_tree, build_file_parent_version_tree};
+use crate::commit::{build_commit_tree, build_file_change_log_tree};
 use crate::delete_commit::verify_if_commit_exist;
 
 
@@ -32,27 +32,21 @@ pub fn change_version(commit_target: &str) -> Result<(), Box<dyn std::error::Err
 
     // Build commit tree for the given branch and commit hash
     let commit_tree: Vec<Commit> = build_commit_tree(branch, commit_target)?;
-
-    // Iterate through the commit tree and update file versions
-    for commit in &commit_tree {
-        for file_change_log in &commit.files_changelogs {
-            let filename = file_change_log.last_file.clone();
-
-            // Build file change log tree and file parent version tree
-            let files_changelogs_tree: Vec<FileChangeLog> = build_file_change_log_tree(&filename, &commit_tree)?;
-            let file_parent_version_tree: Vec<FileChangeLog> = build_file_parent_version_tree(&files_changelogs_tree)?;
+    for commit in &commit_tree{
+        for file_change_log in &commit.files_changelogs{
+            let file_changelogs_tree: Vec<FileChangeLog> = build_file_change_log_tree(&file_change_log.last_file, &commit_tree)?;
 
             let mut previous_version: String = String::new();
-            let last_file_version: &FileChangeLog = file_parent_version_tree.last().unwrap();
 
-            // Apply previous versions to create the desired version
-            for file_changelog_version in &file_parent_version_tree {
+            for file_changelog_version in &file_changelogs_tree {
+
                 let diff_path = format!("{}{}", file_changelog_version.hash_files_path, file_changelog_version.hash_changelog);
                 let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
                 let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();
-                previous_version = apply(&previous_version.to_owned(), &patch).unwrap();
+                previous_version =  apply(&previous_version.to_owned(), &patch)?;
             }
 
+            let last_file_version: &FileChangeLog = file_changelogs_tree.last().unwrap();
             let filename_save_path = format!("{}{}", last_file_version.last_file_path, last_file_version.last_file);
 
             // Open the file and write the previous version
@@ -60,8 +54,8 @@ pub fn change_version(commit_target: &str) -> Result<(), Box<dyn std::error::Err
             f.write_all(previous_version.as_bytes())?;
             f.flush()?;
         }
-    }
 
+    }
     // Update the head commit hash of the branch to the hash of the newly created commit
     branch.head_commit_hash = commit_target.to_string();
 

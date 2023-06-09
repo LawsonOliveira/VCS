@@ -61,7 +61,7 @@ pub struct StructWriter;
 impl StructWriter {
     /// Writes blank structures to files in YAML format.
     pub fn write_blank_structs_to_files(&self) -> Result<(), Box<dyn std::error::Error>> {
-        use structs_mod::{Log, Init, Repository};
+        use structs_mod::{Log, Init, Branch, Repository};
 
         let path = "./my_vcs/";
 
@@ -77,10 +77,19 @@ impl StructWriter {
             current_path: String::new(),
         };
 
+        let main_branch = Branch {
+            branch_name: String::from("main"),
+            commits: Vec::new(),
+            head_commit_hash: String::new(),
+        };
+        
         let my_repo = Repository {
             current_branch: String::from("main"),
-            branches: Vec::new(),
+            branches: vec![main_branch],
         };
+        
+
+
 
         // Serialize the structs into YAML format
         let log_yaml = serde_yaml::to_string(&log)?;

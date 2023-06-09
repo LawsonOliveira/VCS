@@ -1,0 +1,12 @@
+/home/lawson/Documents/Projet/VCS/target/debug/deps/io_lifetimes-749613a13373b618.rmeta: /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/lib.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/portability.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/traits.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/example_ffi.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/raw.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/views.rs
+
+/home/lawson/Documents/Projet/VCS/target/debug/deps/libio_lifetimes-749613a13373b618.rlib: /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/lib.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/portability.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/traits.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/example_ffi.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/raw.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/views.rs
+
+/home/lawson/Documents/Projet/VCS/target/debug/deps/io_lifetimes-749613a13373b618.d: /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/lib.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/portability.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/traits.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/example_ffi.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/raw.rs /home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/views.rs
+
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/lib.rs:
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/portability.rs:
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/traits.rs:
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/example_ffi.rs:
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/raw.rs:
+/home/lawson/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.11/src/views.rs:

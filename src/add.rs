@@ -48,6 +48,7 @@ pub fn verify_file_exists(file_path: &str) -> Result<bool, std::io::Error> {
     if fs::metadata(file_path).is_ok() {
         Ok(true)
     } else {
+        println!("File does not exist");
         Err(io::Error::new(
             io::ErrorKind::NotFound,
             "File does not exist",
