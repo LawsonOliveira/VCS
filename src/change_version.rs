@@ -39,7 +39,6 @@ pub fn change_version(commit_target: &str) -> Result<(), Box<dyn std::error::Err
             let mut previous_version: String = String::new();
 
             for file_changelog_version in &file_changelogs_tree {
-
                 let diff_path = format!("{}{}", file_changelog_version.hash_files_path, file_changelog_version.hash_changelog);
                 let diff_content = fs::read_to_string(&diff_path).expect("could not read hash file");
                 let patch: Patch<str> = Patch::from_str(&diff_content).unwrap();

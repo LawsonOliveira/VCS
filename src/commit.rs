@@ -1,12 +1,8 @@
-/// FIX THE BUG
 use std::fs;
 use std::path::Path;
 use std::io::{self, BufRead, BufReader, Read};
 use std::collections::HashMap;
 use diffy::{apply, Patch, PatchFormatter};
-use sha2::{Digest, Sha256};
-use serde_yaml;
-use hex;
 
 use crate::log;
 use crate::structs;
@@ -15,7 +11,8 @@ use crate::add::calculate_file_hash;
 use crate::structs::structs_mod::{Repository, Branch, Commit, FileChangeLog};
 
 
-
+// Function to create a new commit
+/// Returns `Ok(())` if the commit was created successfully, otherwise returns an `Err` with the corresponding error.
 pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = "my_vcs/";
 
@@ -84,7 +81,9 @@ pub fn create_commit(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 
 
-
+// Check if a branch has a file change log with the original file
+/// Returns `Ok(true)` if exists at least one file_change_log for the file to commit, otherwise returns `Ok(false)`.
+/// Otherwise returns an `Err` with the corresponding error.
 fn has_file_change_log_with_original_file(branch: &Branch, original_file: &str) -> Result<bool, &'static str> {
     for commit in &branch.commits {
         for file_change_log in &commit.files_changelogs {
@@ -97,11 +96,17 @@ fn has_file_change_log_with_original_file(branch: &Branch, original_file: &str) 
 }
 
 
-
+/// Prepares changes to commit by reading a staging area file.
+/// Returns a `Result` indicating either a `HashMap<String, String>` containing the file changes
+/// or an `std::io::Error` if there was an error reading the file.
 fn prepare_changes_to_commit(path: String) -> Result<HashMap<String, String>, std::io::Error> {
     let staging_area_path = format!("{}/staging_area.yml", path);
     let mut file_changeslog: HashMap<String, String> = HashMap::new();
-    let lines = read_file_lines(&staging_area_path)?;
+
+    let file = fs::File::open(path)?;
+    let reader = BufReader::new(file);
+    let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
+
     for line in lines {
         let binding = line.to_string();
         let splited_file_name_and_hash: Vec<&str> = binding.split(":").collect();
@@ -114,7 +119,9 @@ fn prepare_changes_to_commit(path: String) -> Result<HashMap<String, String>, st
 
 
 
-
+// Create a file change log for the first commit of a file
+/// Returns a `Result` indicating either a `FileChangeLog` struct containing the file change log information
+/// or an `std::io::Error` if there was an error during file operations.
 fn create_file_change_log_to_first_commit(filename_to_commit: &String, path: &String, filehash_to_commit: &String)  -> Result<FileChangeLog, std::io::Error> {
 
     let new_file_change_log = FileChangeLog {
@@ -145,11 +152,13 @@ fn create_file_change_log_to_first_commit(filename_to_commit: &String, path: &St
 
 
 
+/// Create a file change log for a commit other than the first commit.
+/// Returns a `Result` indicating either a `FileChangeLog` struct containing the file change log information
+/// or an `std::io::Error` if there was an error during file operations.
 fn create_file_change_log(filename: String, path: String, filehash: String, branch: &mut Branch) -> Result<FileChangeLog, std::io::Error> {
     let filepath = format!("{}add_contents/", path);
     let commit_tree: Vec<Commit> = build_commit_tree(branch, &branch.head_commit_hash)?;
     let file_changelogs_tree: Vec<FileChangeLog> = build_file_change_log_tree(&filename, &commit_tree)?;
-    //let file_changelogs_tree: Vec<FileChangeLog> = build_file_changelogs_tree(&files_changelogs_tree)?;
 
     let last_file = filename.clone();
     let last_file_path = "./".to_string();
@@ -198,8 +207,9 @@ fn create_file_change_log(filename: String, path: String, filehash: String, bran
 }
 
 
-
-
+/// Build a commit tree for a branch and the commit_hash desired.
+/// Returns a `Result` indicating either a vector of `Commit` structs representing the commit tree
+/// or an `std::io::Error` if there was an error during the process.
 pub fn build_commit_tree(branch: &Branch, head_commit_hash: &str) -> Result<Vec<Commit>, io::Error> {
     let mut commit_stack: Vec<String> = vec![head_commit_hash.to_owned()];
     let mut commit_tree: Vec<Commit> = Vec::new();
@@ -219,7 +229,9 @@ pub fn build_commit_tree(branch: &Branch, head_commit_hash: &str) -> Result<Vec<
 }
 
 
-
+/// Build a file_change_log tree based on the commit_tree and original_file_name in the head commit.
+/// Returns a `Result` indicating either a vector of `FileChangeLog` structs representing the file change log tree
+/// or an `std::io::Error` if there was an error during the process.
 pub fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -> Result<Vec<FileChangeLog>, io::Error> {
     let mut file_change_log_tree: Vec<FileChangeLog> = Vec::new();
     let mut previous_name = original_file.to_string();
@@ -237,11 +249,3 @@ pub fn build_file_change_log_tree(original_file: &str, commit_tree: &[Commit]) -
     Ok(file_change_log_tree)
 }
 
-
-
-fn read_file_lines(path: &str) -> Result<Vec<String>, io::Error> {
-    let file = fs::File::open(path)?;
-    let reader = BufReader::new(file);
-    let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
-    Ok(lines)
-}
