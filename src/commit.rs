@@ -103,7 +103,7 @@ fn prepare_changes_to_commit(path: String) -> Result<HashMap<String, String>, st
     let staging_area_path = format!("{}/staging_area.yml", path);
     let mut file_changeslog: HashMap<String, String> = HashMap::new();
 
-    let file = fs::File::open(path)?;
+    let file = fs::File::open(staging_area_path)?;
     let reader = BufReader::new(file);
     let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
 

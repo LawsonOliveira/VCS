@@ -27,7 +27,8 @@ pub fn delete_branch(branch_name: &str) -> Result<(), Box<dyn std::error::Error>
                 if !is_file_used_by_other_branch(&branch_name, &file_change_log.hash_changelog, &repository)? {
                     // Delete the file with hash_changelog
                     let file_path = format!("{}saves/{}", path, file_change_log.hash_changelog);
-                    std::fs::remove_file(file_path)?;
+                    std::fs::remove_file(file_path.clone())?;
+                    println!("Deleted file: {}", file_path);
                 }
             }
         }
@@ -43,7 +44,7 @@ pub fn delete_branch(branch_name: &str) -> Result<(), Box<dyn std::error::Error>
 
 /// Checks if a file with the given hash is used by any branch other than the specified branch.
 /// Returns `Ok(true)` if the file is used by another branch, `Ok(false)` if it is not, or an `Err` if there was an error.
-fn is_file_used_by_other_branch(branch_name: &str, file_hash: &str, repository: &structs::structs_mod::Repository) -> Result<bool, Box<dyn std::error::Error>> {
+pub fn is_file_used_by_other_branch(branch_name: &str, file_hash: &str, repository: &structs::structs_mod::Repository) -> Result<bool, Box<dyn std::error::Error>> {
     let result = repository.branches.iter().any(|branch| {
         branch.branch_name != branch_name && branch.commits.iter().any(|commit| {
             commit.files_changelogs.iter().any(|f| f.hash_changelog == file_hash)
